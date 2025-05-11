@@ -14,10 +14,10 @@ layout: home
 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 3rem 2rem 2rem 2rem; background: #e0f7fa;">
   <div style="max-width: 500px;">
     <img src="/assets/profile.jpg" alt="Profile picture" style="width: 160px; height: 160px; border-radius: 50%; object-fit: cover; border: 4px solid #4db6ac; margin-right: 2rem; margin-bottom: 1rem; float: left;" />
-    <h1>Camille [Your Last Name]</h1>
+    <h1>Camille </h1>
     <h3>Geospatial Data Scientist | Environmental & Climate Studies</h3>
     <p>
-      Welcome! I am a geospatial data scientist; I am building my webpage now. More to come soon!
+      Welcome! I am building my webpage now. More to come soon!
     </p>
     <div style="margin-top: 1rem;">
       <a href="mailto:your.email@example.com" title="Email" style="margin-right: 1rem; font-size: 1.3rem;">📧</a>
