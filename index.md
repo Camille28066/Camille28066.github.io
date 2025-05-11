@@ -21,8 +21,8 @@ layout: default
     </p>
     <div style="margin-top: 1rem;">
       <a href="mailto:your.email@example.com" title="Email" style="margin-right: 1rem; font-size: 1.3rem;">📧</a>
-      <a href="https://www.linkedin.com/in/yourprofile" target="_blank" title="LinkedIn" style="margin-right: 1rem; font-size: 1.3rem;">LinkedIn</a>
-      <a href="https://www.researchgate.net/profile/yourprofile" target="_blank" title="ResearchGate" style="margin-right: 1rem; font-size: 1.3rem;">ResearchGate</a>
+      <a href="https://www.linkedin.com/in/camille-labrousse-942156178/" target="_blank" title="LinkedIn" style="margin-right: 1rem; font-size: 1.3rem;">LinkedIn</a>
+      <a href="https://www.researchgate.net/profile/Camille-Labrousse?ev=hdr_xprf" target="_blank" title="ResearchGate" style="margin-right: 1rem; font-size: 1.3rem;">ResearchGate</a>
       <a href="https://github.com/Camille28066" target="_blank" title="GitHub" style="margin-right: 1rem; font-size: 1.3rem;">GitHub</a>
     </div>
   </div>
