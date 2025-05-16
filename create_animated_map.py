@@ -65,11 +65,11 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period='PT1S', # Changed from PT0.5S to PT1S
+        period='PT1M', # Changed from PT0.5S to PT1S
         add_last_point=True,
         auto_play=True,
         loop=True,
-        max_speed=1,
+        max_speed=10,
         loop_button=True,
         date_options='YYYY-MM-DD HH:mm:ss',
         time_slider_drag_update=True,
