@@ -15,37 +15,31 @@ layout: default
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    <!-- Removed Leaflet.TimeDimension CSS -->
-    <link rel="stylesheet" href="libs/Leaflet.MarkerPlayer.css"/> <!-- Added Leaflet.MarkerPlayer CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markerplayer/dist/leaflet.markerplayer.css"/> <!-- Changed to CDN -->
     
     <meta name="viewport" content="width=device-width,
         initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
-    <!-- Removed ISO8601 and Moment.js as they might not be strictly needed by MarkerPlayer, can be re-added if necessary -->
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <!-- Removed Leaflet.TimeDimension JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-    <script src="libs/Leaflet.MarkerPlayer.js"></script> <!-- Added Leaflet.MarkerPlayer JS -->
+    <script src="https://unpkg.com/leaflet.markerplayer/dist/leaflet.markerplayer.js"></script> <!-- Changed to CDN -->
 
     <style>
-        #shikokuTimeDimensionMap { /* Keep ID for now, can be renamed */
-            height: 600px; /* You can adjust the height */
+        #shikokuMapContainer { /* Renamed ID for clarity */
+            height: 600px; 
             width: 100%;
             position: relative;
         }
         .leaflet-container { font-size: 1rem; }
-        /* Add any specific styles for MarkerPlayer if needed, e.g., custom icons */
-        .custom-icon.plane-icon { /* Example from MarkerPlayer docs */
+        /* Styles for custom icons can remain if you plan to use them */
+        .custom-icon.plane-icon {
             margin-left: -12px;
             margin-top: -12px;
             width: 24px;
             height: 24px;
-            /* background-image: url('path/to/your/plane-icon.png'); */
-            /* background-size: cover; */
-            /* filter: invert(1); */ /* Example to change color if it's an SVG or can be filtered */
         }
     </style>
 </head>
@@ -65,12 +59,12 @@ layout: default
   <!-- Content for sidestories page will go here -->
   <p style="text-align: center;">Section japan.</p>
   
-  <div id="shikokuTimeDimensionMap"></div>
+  <div id="shikokuMapContainer"></div> <!-- Updated ID -->
 
 </section>
 
 <script>
-    var shikokuMap = L.map('shikokuTimeDimensionMap', {
+    var shikokuMap = L.map('shikokuMapContainer', { // Use updated ID
         zoomControl: true,
         preferCanvas: false,
     });
@@ -82,34 +76,33 @@ layout: default
     var gpxTrackFile = 'shikoku_track.gpx';
     var gpxLayer = new L.GPX(gpxTrackFile, {
         async: true,
-        marker_options: { // These are for the static GPX layer, MarkerPlayer will have its own marker
+        marker_options: { 
             startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
             endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png',
             wptIconUrls: { '': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-wpt.png' }
         },
-        polyline_options: { // Style for the static GPX track
-            color: 'rgba(0, 0, 255, 0.3)', // Light blue, semi-transparent
+        polyline_options: { 
+            color: 'rgba(0, 0, 255, 0.3)', 
             opacity: 0.3,
             weight: 3,
             lineCap: 'round'
         }
     }).on('loaded', function(e) {
         shikokuMap.fitBounds(e.target.getBounds());
-        // The original GPX track is added to the map by default by L.GPX, we can leave it as a static background track.
 
-        var coordinates = [];
+        var rawCoordinates = []; // [[lng, lat], ...]
         function processLatLngs(latlngsArray) {
             if (latlngsArray && latlngsArray.length > 0) {
                 if (Array.isArray(latlngsArray[0]) && latlngsArray[0][0] instanceof L.LatLng) {
                     latlngsArray.forEach(function(segment) {
                         segment.forEach(function(latlng) {
-                            coordinates.push([latlng.lng, latlng.lat]);
+                            rawCoordinates.push([latlng.lng, latlng.lat]);
                         });
                     });
                 } else if (latlngsArray[0] instanceof L.LatLng) {
                     latlngsArray.forEach(function(latlng) {
-                        coordinates.push([latlng.lng, latlng.lat]);
+                        rawCoordinates.push([latlng.lng, latlng.lat]);
                     });
                 }
             }
@@ -121,68 +114,59 @@ layout: default
             }
         });
 
-        console.log("Coordinates extracted for MarkerPlayer:", coordinates.length);
-        if (coordinates.length <= 1) {
-            console.warn("Not enough coordinates to animate with MarkerPlayer. GPX points found:", coordinates.length);
+        console.log("Raw coordinates extracted:", rawCoordinates.length);
+        if (rawCoordinates.length <= 1) {
+            console.warn("Not enough coordinates to animate. GPX points found:", rawCoordinates.length);
             return; 
         }
 
-        var pointIntervalMs = 500; // Time between each GPX point in milliseconds
-        var currentTime = new Date(Date.UTC(2023, 0, 1, 0, 0, 0)).getTime(); // Base start time
-        
-        var playerTimes = [];
-        var playerDurations = [];
+        // Prepare points for L.markerPlayer: array of [lat, lng]
+        var playerPoints = rawCoordinates.map(function(coord) {
+            return [coord[1], coord[0]]; // Convert [lng, lat] to [lat, lng]
+        });
 
-        for (var i = 0; i < coordinates.length; i++) {
-            playerTimes.push(currentTime + (i * pointIntervalMs));
-            if (i < coordinates.length - 1) { // Durations array has one less element
-                playerDurations.push(pointIntervalMs);
-            }
+        var pointIntervalMs = 500; // Duration in ms for each segment
+        var playerDurations = [];
+        for (var i = 0; i < playerPoints.length - 1; i++) {
+            playerDurations.push(pointIntervalMs);
         }
         
-        var geoJsonDataForPlayer = {
-            type: "FeatureCollection",
-            features: [
-                {
-                    type: "Feature",
-                    geometry: {
-                        type: "LineString",
-                        coordinates: coordinates
-                    },
-                    properties: {
-                        times: playerTimes,
-                        duration: playerDurations,
-                        // icon: "plane", // Optional: if you have a custom icon class
-                        // iconOptions: { className: "custom-icon plane-icon" } // Optional
-                    }
-                }
-            ]
-        };
+        if (playerPoints.length > 0 && playerDurations.length === 0 && playerPoints.length === 1) {
+            // Handle single point case for duration if MarkerPlayer requires it
+            // Though typically animation needs at least two points.
+            // If MarkerPlayer supports a single point with a total duration, adjust here.
+            // For now, assuming animation implies >1 point.
+        } else if (playerPoints.length > 1 && playerDurations.length === 0) {
+            // This case should not happen if pointIntervalMs is used correctly for multiple points
+            console.warn("Player durations array is empty for multiple points. This might be an error.");
+            // Fallback: calculate total duration and let MarkerPlayer distribute it
+            // var totalDuration = (playerPoints.length -1) * pointIntervalMs;
+            // playerDurations = totalDuration; // This would make it a single number for total duration
+        }
 
-        console.log("GeoJSON for MarkerPlayer:", JSON.stringify(geoJsonDataForPlayer).substring(0, 200) + "...");
+        console.log("Points for MarkerPlayer:", playerPoints.length, "Durations per segment:", playerDurations.length);
 
-        var overallSpeed = 1; // Default speed. 1 means 1000ms in data = 1s in animation.
-                           // Increase for faster animation (e.g., 2 means 2x speed).
-                           // Decrease for slower (e.g., 0.5 means 0.5x speed).
-        var player = new L.MarkerPlayer(geoJsonDataForPlayer, {
-            speed: overallSpeed, // Adjust animation speed
+        if (playerPoints.length < 2) {
+            console.warn("MarkerPlayer requires at least two points to animate a path.");
+            return;
+        }
+
+        var markerPlayer = L.markerPlayer(playerPoints, playerDurations, {
+            autostart: true, // Changed from playOnLoad
             loop: true,
-            playOnLoad: true, // Autoplay
-            // markerOptions: { icon: L.AwesomeMarkers.icon({icon: 'bicycle', markerColor: 'red', prefix: 'fa'}) } // Example custom marker
+            // Example of using a Leaflet.AwesomeMarkers icon for the player
+            // icon: L.AwesomeMarkers.icon({icon: 'bicycle', markerColor: 'red', prefix: 'fa'}) 
         }).addTo(shikokuMap);
 
-        // Optional: Add event listeners for player events if needed
-        player.on('play', function() { console.log('MarkerPlayer: playing'); });
-        player.on('pause', function() { console.log('MarkerPlayer: paused'); });
-        player.on('end', function() { console.log('MarkerPlayer: ended'); });
+        markerPlayer.on('play', function() { console.log('MarkerPlayer: playing'); });
+        markerPlayer.on('pause', function() { console.log('MarkerPlayer: paused'); });
+        markerPlayer.on('end', function() { console.log('MarkerPlayer: ended'); });
         
-        // The L.GPX layer itself adds the track to the map. If you only want the MarkerPlayer animation
-        // and not the static track from L.GPX, you might need to remove the L.GPX layer after processing.
-        // For example: shikokuMap.removeLayer(gpxLayer);
-        // However, having the static track can be good for context.
+        // Optional: remove the static GPX track if you only want the animation
+        // shikokuMap.removeLayer(gpxLayer);
 
     }).on('error', function(e) {
         console.error("Error loading GPX file: ", e.err, e);
-    }).addTo(shikokuMap); // Keep this to load and parse the GPX
+    }).addTo(shikokuMap);
 
 </script>
