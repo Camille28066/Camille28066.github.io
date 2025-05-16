@@ -15,27 +15,38 @@ layout: default
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.css"/>
+    <!-- Removed Leaflet.TimeDimension CSS -->
+    <link rel="stylesheet" href="libs/Leaflet.MarkerPlayer.css"/> <!-- Added Leaflet.MarkerPlayer CSS -->
     
     <meta name="viewport" content="width=device-width,
         initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <!-- Removed ISO8601 and Moment.js as they might not be strictly needed by MarkerPlayer, can be re-added if necessary -->
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <!-- Removed Leaflet.TimeDimension JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+    <script src="libs/Leaflet.MarkerPlayer.js"></script> <!-- Added Leaflet.MarkerPlayer JS -->
 
     <style>
-        #shikokuTimeDimensionMap {
+        #shikokuTimeDimensionMap { /* Keep ID for now, can be renamed */
             height: 600px; /* You can adjust the height */
             width: 100%;
             position: relative;
         }
-        .leaflet-container { font-size: 1rem; } /* From shikoku_track_ref.html */
+        .leaflet-container { font-size: 1rem; }
+        /* Add any specific styles for MarkerPlayer if needed, e.g., custom icons */
+        .custom-icon.plane-icon { /* Example from MarkerPlayer docs */
+            margin-left: -12px;
+            margin-top: -12px;
+            width: 24px;
+            height: 24px;
+            /* background-image: url('path/to/your/plane-icon.png'); */
+            /* background-size: cover; */
+            /* filter: invert(1); */ /* Example to change color if it's an SVG or can be filtered */
+        }
     </style>
 </head>
 
@@ -59,69 +70,44 @@ layout: default
 </section>
 
 <script>
-    // Ensure this script runs after the DOM is fully loaded
-    // Initialize the map
     var shikokuMap = L.map('shikokuTimeDimensionMap', {
         zoomControl: true,
         preferCanvas: false,
     });
 
-    // Add Esri World Imagery tile layer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(shikokuMap);
 
-    // TimeDimension plugin setup
-    L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({});
-
-    shikokuMap.timeDimension = L.timeDimension({
-        // period: Will be set by setAvailableTimes or by the layer
-    });
-
-    var desiredAnimationDurationSeconds = 60;
-    var desiredFps = 30;
-    var numAnimationFrames = desiredAnimationDurationSeconds * desiredFps;
-    var playerTransitionTimeMs = Math.round(1000 / desiredFps); // e.g., 33ms for 30fps
-
-    var timeDimensionControl = new L.Control.TimeDimensionCustom({
-        playerOptions: {
-            loop: true,
-            startOver: true,
-            transitionTime: playerTransitionTimeMs,
-        },
-        position: 'bottomleft'
-    });
-    shikokuMap.addControl(timeDimensionControl);
-
     var gpxTrackFile = 'shikoku_track.gpx';
     var gpxLayer = new L.GPX(gpxTrackFile, {
         async: true,
-        marker_options: {
+        marker_options: { // These are for the static GPX layer, MarkerPlayer will have its own marker
             startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
             endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png',
             wptIconUrls: { '': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-wpt.png' }
         },
-        polyline_options: {
-            color: 'rgba(0, 0, 255, 0.3)',
+        polyline_options: { // Style for the static GPX track
+            color: 'rgba(0, 0, 255, 0.3)', // Light blue, semi-transparent
             opacity: 0.3,
             weight: 3,
             lineCap: 'round'
         }
     }).on('loaded', function(e) {
         shikokuMap.fitBounds(e.target.getBounds());
+        // The original GPX track is added to the map by default by L.GPX, we can leave it as a static background track.
 
         var coordinates = [];
-        // Define processLatLngs to correctly populate coordinates
         function processLatLngs(latlngsArray) {
             if (latlngsArray && latlngsArray.length > 0) {
-                if (Array.isArray(latlngsArray[0]) && latlngsArray[0][0] instanceof L.LatLng) { // Array of arrays of LatLngs (MultiPolyline)
+                if (Array.isArray(latlngsArray[0]) && latlngsArray[0][0] instanceof L.LatLng) {
                     latlngsArray.forEach(function(segment) {
                         segment.forEach(function(latlng) {
                             coordinates.push([latlng.lng, latlng.lat]);
                         });
                     });
-                } else if (latlngsArray[0] instanceof L.LatLng) { // Array of LatLngs (Polyline)
+                } else if (latlngsArray[0] instanceof L.LatLng) {
                     latlngsArray.forEach(function(latlng) {
                         coordinates.push([latlng.lng, latlng.lat]);
                     });
@@ -135,81 +121,68 @@ layout: default
             }
         });
 
-        console.log("Coordinates extracted:", coordinates.length);
+        console.log("Coordinates extracted for MarkerPlayer:", coordinates.length);
         if (coordinates.length <= 1) {
-            console.warn("Not enough coordinates to animate. GPX points found:", coordinates.length);
-            return;
+            console.warn("Not enough coordinates to animate with MarkerPlayer. GPX points found:", coordinates.length);
+            return; 
         }
 
-        var baseTimeForGeoJson = new Date(Date.UTC(2023, 0, 1, 0, 0, 0));
-        var timestampsInGeoJson = [];
+        var pointIntervalMs = 500; // Time between each GPX point in milliseconds
+        var currentTime = new Date(Date.UTC(2023, 0, 1, 0, 0, 0)).getTime(); // Base start time
+        
+        var playerTimes = [];
+        var playerDurations = [];
+
         for (var i = 0; i < coordinates.length; i++) {
-            var pointTime = new Date(baseTimeForGeoJson.getTime() + i * 500); // 0.5 second interval for data points
-            timestampsInGeoJson.push(pointTime.toISOString());
+            playerTimes.push(currentTime + (i * pointIntervalMs));
+            if (i < coordinates.length - 1) { // Durations array has one less element
+                playerDurations.push(pointIntervalMs);
+            }
         }
-
-        var geoJsonData = {
-            type: "Feature",
-            geometry: { type: "LineString", coordinates: coordinates },
-            properties: {
-                times: timestampsInGeoJson, // Crucial for L.timeDimension.layer.geoJson
-                style: { // Style for the animated track
-                    color: 'rgba(255, 0, 0, 0.8)', // Red, more opaque
-                    weight: 5
+        
+        var geoJsonDataForPlayer = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    geometry: {
+                        type: "LineString",
+                        coordinates: coordinates
+                    },
+                    properties: {
+                        times: playerTimes,
+                        duration: playerDurations,
+                        // icon: "plane", // Optional: if you have a custom icon class
+                        // iconOptions: { className: "custom-icon plane-icon" } // Optional
+                    }
                 }
-            }
+            ]
         };
+
+        console.log("GeoJSON for MarkerPlayer:", JSON.stringify(geoJsonDataForPlayer).substring(0, 200) + "...");
+
+        var overallSpeed = 1; // Default speed. 1 means 1000ms in data = 1s in animation.
+                           // Increase for faster animation (e.g., 2 means 2x speed).
+                           // Decrease for slower (e.g., 0.5 means 0.5x speed).
+        var player = new L.MarkerPlayer(geoJsonDataForPlayer, {
+            speed: overallSpeed, // Adjust animation speed
+            loop: true,
+            playOnLoad: true, // Autoplay
+            // markerOptions: { icon: L.AwesomeMarkers.icon({icon: 'bicycle', markerColor: 'red', prefix: 'fa'}) } // Example custom marker
+        }).addTo(shikokuMap);
+
+        // Optional: Add event listeners for player events if needed
+        player.on('play', function() { console.log('MarkerPlayer: playing'); });
+        player.on('pause', function() { console.log('MarkerPlayer: paused'); });
+        player.on('end', function() { console.log('MarkerPlayer: ended'); });
         
-        var baseGeoJsonLayer = L.geoJson(geoJsonData, {
-            style: function (feature) { return feature.properties.style; }
-        });
+        // The L.GPX layer itself adds the track to the map. If you only want the MarkerPlayer animation
+        // and not the static track from L.GPX, you might need to remove the L.GPX layer after processing.
+        // For example: shikokuMap.removeLayer(gpxLayer);
+        // However, having the static track can be good for context.
 
-        var animatedLayer = L.timeDimension.layer.geoJson(baseGeoJsonLayer, {
-            updateTimeDimension: true,
-            addlastPoint: true, // Show a marker at the current time position
-            updateTimeDimensionMode: 'update',
-        });
-        animatedLayer.addTo(shikokuMap);
-        
-        var totalOriginalDataDurationMs = (coordinates.length - 1) * 500;
-        var timeIncrementPerFrameMs = 0;
-        if (numAnimationFrames > 1) {
-            timeIncrementPerFrameMs = totalOriginalDataDurationMs / (numAnimationFrames - 1);
-        } else if (numAnimationFrames === 1) {
-            timeIncrementPerFrameMs = totalOriginalDataDurationMs; // Single frame shows the end state
-        }
-
-        console.log("Total original data duration (ms) based on 0.5s interval:", totalOriginalDataDurationMs);
-        console.log("Time increment per frame (ms):", timeIncrementPerFrameMs);
-        console.log("Number of animation frames desired:", numAnimationFrames);
-
-        var timestampsForControl = [];
-        if (numAnimationFrames > 0) {
-            for (var k = 0; k < numAnimationFrames; k++) { // Use k to avoid conflict with outer i
-                var frameTimeMs = baseTimeForGeoJson.getTime() + k * timeIncrementPerFrameMs;
-                timestampsForControl.push(new Date(frameTimeMs).toISOString());
-            }
-            // Ensure the last frame timestamp corresponds to the total duration if multiple frames
-            if (numAnimationFrames > 1 && timestampsForControl.length > 0) {
-                timestampsForControl[timestampsForControl.length - 1] = new Date(baseTimeForGeoJson.getTime() + totalOriginalDataDurationMs).toISOString();
-            }
-            
-            console.log("Timestamps for control: count=", timestampsForControl.length, "sample:", timestampsForControl.slice(0,5));
-
-            if (timestampsForControl.length > 0) {
-                shikokuMap.timeDimension.setAvailableTimes(timestampsForControl, 'replaceAll');
-                // Optional: Adjust period if needed, though setAvailableTimes usually suffices
-                // var mapPeriodSeconds = Math.max(1, Math.round(timeIncrementPerFrameMs / 1000));
-                // shikokuMap.timeDimension.options.period = "PT" + mapPeriodSeconds + "S";
-                // console.log("Set map timeDimension period to PT" + mapPeriodSeconds + "S");
-            } else {
-                console.warn("No timestamps generated for the time dimension control (numAnimationFrames > 0 but timestampsForControl is empty).");
-            }
-        } else {
-            console.warn("numAnimationFrames is 0, cannot generate timestamps for control.");
-        }
     }).on('error', function(e) {
         console.error("Error loading GPX file: ", e.err, e);
-    }).addTo(shikokuMap);
+    }).addTo(shikokuMap); // Keep this to load and parse the GPX
 
 </script>
