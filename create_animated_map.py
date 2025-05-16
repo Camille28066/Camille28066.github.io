@@ -68,7 +68,7 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
         auto_play=True,
         loop=False,
         add_last_point=False,
-        max_speed=10, # You can increase this if you want the slider to go faster
+        max_speed=5, # You can increase this if you want the slider to go faster
         date_options="YYYY/MM/DD HH:mm:ss"
     ).add_to(m)
     
