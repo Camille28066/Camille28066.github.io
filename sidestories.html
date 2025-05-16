@@ -27,7 +27,7 @@ layout: default
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script> <!-- Added leaflet-gpx library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
     <style>
         #shikokuTimeDimensionMap {
@@ -74,9 +74,8 @@ layout: default
     // TimeDimension plugin setup
     L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({});
 
-    // Initial period, will be updated after data loading
     shikokuMap.timeDimension = L.timeDimension({
-        // period: "PT1M", // Will be set dynamically
+        // period: Will be set dynamically
     });
 
     var desiredAnimationDurationSeconds = 60;
@@ -132,15 +131,16 @@ layout: default
         console.log("Coordinates extracted:", coordinates.length);
         if (coordinates.length <= 1) {
             console.warn("Not enough coordinates to animate. GPX points found:", coordinates.length);
-            return; // Exit if not enough coordinates
+            return; 
         }
 
-
-        if (coordinates.length > 1) { // This check is somewhat redundant due to the one above, but harmless
+        // This check is somewhat redundant due to the one above, but harmless
+        if (coordinates.length > 1) { 
             var baseTimeForGeoJson = new Date(Date.UTC(2023, 0, 1, 0, 0, 0));
             var timestampsInGeoJson = [];
             for (var i = 0; i < coordinates.length; i++) {
-                var pointTime = new Date(baseTimeForGeoJson.getTime() + i * 1000); // 1 second interval for data points
+                // Changed to 0.5 second (500ms) interval for data points
+                var pointTime = new Date(baseTimeForGeoJson.getTime() + i * 500); 
                 timestampsInGeoJson.push(pointTime.toISOString());
             }
 
@@ -165,7 +165,8 @@ layout: default
             animatedLayer.addTo(shikokuMap);
             
             // Generate timestamps for the animation control
-            var totalOriginalDataDurationMs = (coordinates.length - 1) * 1000;
+            // Adjusted to 0.5 second (500ms) interval per original data point
+            var totalOriginalDataDurationMs = (coordinates.length - 1) * 500; 
             var timeIncrementPerFrameMs = 0;
             if (numAnimationFrames > 1) {
                 timeIncrementPerFrameMs = totalOriginalDataDurationMs / (numAnimationFrames - 1);
@@ -173,7 +174,8 @@ layout: default
                 timeIncrementPerFrameMs = totalOriginalDataDurationMs;
             }
 
-            console.log("Total original data duration (ms):", totalOriginalDataDurationMs);
+
+            console.log("Total original data duration (ms) based on 0.5s interval:", totalOriginalDataDurationMs);
             console.log("Time increment per frame (ms):", timeIncrementPerFrameMs);
             console.log("Number of animation frames desired:", numAnimationFrames);
 
@@ -205,11 +207,11 @@ layout: default
             if (timestampsForControl.length > 0) {
                 var mapPeriodSeconds = 0;
                 if (timeIncrementPerFrameMs > 0) {
-                    mapPeriodSeconds = Math.max(1, Math.round(timeIncrementPerFrameMs / 1000)); // Period in seconds, at least 1
-                } else if (timestampsForControl.length === 1) { // Only one frame
+                    mapPeriodSeconds = Math.max(1, Math.round(timeIncrementPerFrameMs / 1000)); 
+                } else if (timestampsForControl.length === 1) { 
                      mapPeriodSeconds = Math.max(1, Math.round(totalOriginalDataDurationMs / 1000));
-                } else { // No frames, or no duration
-                    mapPeriodSeconds = 1; // Default to 1s if no other info
+                } else { 
+                    mapPeriodSeconds = 1; 
                 }
 
                 console.log("Calculated mapPeriodSeconds:", mapPeriodSeconds);
@@ -237,6 +239,9 @@ layout: default
                     }
                     if (currentAvailableTimes.indexOf(currentTimeInDimension) === -1 && currentAvailableTimes.length > 0) {
                         console.error("CRITICAL: Current time is not in available times list!");
+                        console.log("Current time (epoch):", currentTimeInDimension, "First available time (epoch):", currentAvailableTimes[0]);
+                        console.log("Is current time in available times array?", currentAvailableTimes.includes(currentTimeInDimension));
+
                     }
 
                 } catch (error) {
