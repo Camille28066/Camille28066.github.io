@@ -33,10 +33,10 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
         return
         
     # Create a Folium map centered around the first point
-    map_center = [34.175062, 134.491041] # Updated map center
+    map_center = [33.5, 133.0] # Updated map center (more South-West)
     m = folium.Map(
         location=map_center, 
-        zoom_start=8, 
+        zoom_start=7, # Zoomed out from 8 to 7
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri Satellite"
     )
