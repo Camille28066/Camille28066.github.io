@@ -1,8 +1,10 @@
 \
 import folium
 from folium.plugins import TimestampedGeoJson
-from trackanimation.animation import AnimationTrack
+# AnimationTrack is imported but not used. Consider removing if not planned for future use.
+# from trackanimation.animation import AnimationTrack 
 import gpxpy
+from datetime import datetime, timedelta # Added import
 
 def create_animation_from_gpx(gpx_file_path, output_html_path):
     try:
@@ -19,22 +21,19 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
     # Assuming the first track is the one to animate
     track = gpx.tracks[0]
     
-    # Extract points and times
-    points = []
+    # Extract coordinates from points that have time information
+    track_coordinates_for_animation = []
     for segment in track.segments:
         for point in segment.points:
-            if point.time: # Ensure point has time information
-                points.append({
-                    'coordinates': [point.longitude, point.latitude],
-                    'time': point.time.isoformat()
-                })
+            if point.time: # Only include points that have time information for the animation path
+                track_coordinates_for_animation.append([point.longitude, point.latitude])
 
-    if not points:
-        print("No points with time information found in the GPX track.")
+    if not track_coordinates_for_animation:
+        print("No points with time information found in the GPX track to animate.")
         return
         
     # Create a Folium map centered around the first point
-    map_center = [points[0]['coordinates'][1], points[0]['coordinates'][0]] # lat, lon
+    map_center = [track_coordinates_for_animation[0][1], track_coordinates_for_animation[0][0]] # lat, lon
     m = folium.Map(
         location=map_center, 
         zoom_start=8, 
@@ -42,17 +41,22 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
         attr="Esri Satellite"
     )
 
+    # Generate new timestamps like in folium_japan.py
+    start_time = datetime(2023, 1, 1, 0, 0, 0) 
+    new_timestamps = [(start_time + timedelta(seconds=i)).isoformat() + "Z" 
+                      for i in range(len(track_coordinates_for_animation))]
+
     # Prepare data for TimestampedGeoJson
     features = [
         {
             'type': 'Feature',
             'geometry': {
                 'type': 'LineString',
-                'coordinates': [p['coordinates'] for p in points], # p['coordinates'] is [lon, lat]
+                'coordinates': track_coordinates_for_animation, # Use extracted coordinates
             },
             'properties': {
-                'times': [p['time'] for p in points],
-                'style': {"color": "#FF4500", "weight": 3} # Updated style, removed icon and iconstyle
+                'times': new_timestamps, # Use newly generated timestamps
+                'style': {"color": "#FF4500", "weight": 3} 
             }
         }
     ]
@@ -69,17 +73,17 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
     ).add_to(m)
     
     # Add the original GPX track as a static line for reference
-    # Convert GPX to GeoJSON for Folium
-    track_coordinates = []
+    # This part remains unchanged and uses the original track data
+    track_coordinates_static = []
     for segment in track.segments:
         line = []
         for point in segment.points:
             line.append((point.longitude, point.latitude))
-        track_coordinates.append(line)
+        track_coordinates_static.append(line)
     
-    if track_coordinates:
+    if track_coordinates_static:
         folium.PolyLine(
-            locations=[[(lat, lon) for lon, lat in segment] for segment in track_coordinates], # Folium expects (lat, lon)
+            locations=[[(lat, lon) for lon, lat in segment] for segment in track_coordinates_static], # Folium expects (lat, lon)
             color="rgba(0,0,255,0.3)", # Light blue, semi-transparent
             weight=3,
             opacity=0.5
