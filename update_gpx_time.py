@@ -51,7 +51,7 @@ def add_time_to_gpx(file_path, output_file_path):
 if __name__ == '__main__':
     # IMPORTANT: Replace with the actual path to your GPX file
     input_gpx_file = r'shikoku_track.gpx' # Assuming it's in the same directory
-    output_gpx_file = r'shikoku_track.gpx' # Overwrite the existing file
+    output_gpx_file = r'shikoku_track_with_time.gpx' # Output to a new file
 
     # To be safe, you might want to output to a new file first:
     # output_gpx_file = r'shikoku_track_with_time.gpx' 

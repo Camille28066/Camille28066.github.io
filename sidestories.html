@@ -15,7 +15,7 @@ layout: default
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markerplayer/dist/leaflet.markerplayer.css"/> <!-- Changed to UNPKG CDN path -->
+    <!-- Removed Leaflet.MarkerPlayer CSS as it's no longer directly used here -->
     
     <meta name="viewport" content="width=device-width,
         initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -24,14 +24,14 @@ layout: default
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-    <script src="https://unpkg.com/leaflet.markerplayer/dist/leaflet.markerplayer.js"></script> <!-- Changed to UNPKG CDN path -->
+    <!-- Removed Leaflet.MarkerPlayer JS and leaflet-gpx as the animation is now in an iframe -->
 
     <style>
-        #shikokuMapContainer { /* Renamed ID for clarity */
-            height: 600px; 
+        #shikokuMapContainer {
+            height: 650px; /* Adjusted height to better fit iframe content */
             width: 100%;
             position: relative;
+            border: none; /* Remove border from iframe container if any */
         }
         .leaflet-container { font-size: 1rem; }
         /* Styles for custom icons can remain if you plan to use them */
@@ -59,101 +59,17 @@ layout: default
   <!-- Content for sidestories page will go here -->
   <p style="text-align: center;">Section japan.</p>
   
-  <div id="shikokuMapContainer"></div> <!-- Updated ID -->
+  <div id="shikokuMapSection">
+    <iframe src="animated_shikoku_map.html" id="shikokuMapContainer" title="Animated Shikoku GPX Track"></iframe>
+  </div>
 
 </section>
 
 <script>
-    var shikokuMap = L.map('shikokuMapContainer', { // Use updated ID
-        zoomControl: true,
-        preferCanvas: false,
-    });
-
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    }).addTo(shikokuMap);
-
-    var gpxTrackFile = 'shikoku_track.gpx';
-    var gpxLayer = new L.GPX(gpxTrackFile, {
-        async: true,
-        marker_options: { 
-            startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
-            endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png',
-            wptIconUrls: { '': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-wpt.png' }
-        },
-        polyline_options: { 
-            color: 'rgba(0, 0, 255, 0.3)', 
-            opacity: 0.3,
-            weight: 3,
-            lineCap: 'round'
-        }
-    }).on('loaded', function(e) {
-        shikokuMap.fitBounds(e.target.getBounds());
-
-        var rawCoordinates = []; // [[lng, lat], ...]
-        function processLatLngs(latlngsArray) {
-            if (latlngsArray && latlngsArray.length > 0) {
-                if (Array.isArray(latlngsArray[0]) && latlngsArray[0][0] instanceof L.LatLng) {
-                    latlngsArray.forEach(function(segment) {
-                        segment.forEach(function(latlng) {
-                            rawCoordinates.push([latlng.lng, latlng.lat]);
-                        });
-                    });
-                } else if (latlngsArray[0] instanceof L.LatLng) {
-                    latlngsArray.forEach(function(latlng) {
-                        rawCoordinates.push([latlng.lng, latlng.lat]);
-                    });
-                }
-            }
-        }
-
-        e.target.eachLayer(function(layer) {
-            if (layer instanceof L.Polyline) {
-                processLatLngs(layer.getLatLngs());
-            }
-        });
-
-        console.log("Raw coordinates extracted:", rawCoordinates.length);
-        if (rawCoordinates.length <= 1) {
-            console.warn("Not enough coordinates to animate. GPX points found:", rawCoordinates.length);
-            return; 
-        }
-
-        // Prepare points for L.markerPlayer: array of [lat, lng]
-        var playerPoints = rawCoordinates.map(function(coord) {
-            return [coord[1], coord[0]]; // Convert [lng, lat] to [lat, lng]
-        });
-
-        var pointIntervalMs = 500; // Duration in ms for each segment
-        var playerDurations = [];
-        for (var i = 0; i < playerPoints.length - 1; i++) {
-            playerDurations.push(pointIntervalMs);
-        }
-        
-        console.log("Points for MarkerPlayer:", playerPoints.length, "Durations per segment:", playerDurations.length);
-
-        if (playerPoints.length < 2) {
-            console.warn("MarkerPlayer requires at least two points to animate a path.");
-            return;
-        }
-
-        var markerPlayer = L.markerPlayer(playerPoints, playerDurations, {
-            autostart: true, // Changed from playOnLoad
-            loop: true,
-            // Example of using a Leaflet.AwesomeMarkers icon for the player
-            // icon: L.AwesomeMarkers.icon({icon: 'bicycle', markerColor: 'red', prefix: 'fa'}) 
-        }).addTo(shikokuMap);
-
-        markerPlayer.on('play', function() { console.log('MarkerPlayer: playing'); });
-        markerPlayer.on('pause', function() { console.log('MarkerPlayer: paused'); });
-        markerPlayer.on('end', function() { console.log('MarkerPlayer: ended'); });
-        
-        // Optional: remove the static GPX track if you only want the animation
-        // shikokuMap.removeLayer(gpxLayer);
-
-    }).on('error', function(e) {
-        console.error("Error loading GPX file: ", e.err, e);
-    }).addTo(shikokuMap);
-
+    // Previous Leaflet JavaScript for direct map rendering has been removed.
+    // The map is now displayed via an iframe loading animated_shikoku_map.html
+    // If you need to interact with the iframe content from this parent page,
+    // you would need to use window.postMessage or direct contentWindow access
+    // (subject to same-origin policy).
+    console.log("Shikoku map is now loaded via an iframe.");
 </script>
