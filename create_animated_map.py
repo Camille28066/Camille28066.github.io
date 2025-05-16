@@ -35,7 +35,12 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
         
     # Create a Folium map centered around the first point
     map_center = [points[0]['coordinates'][1], points[0]['coordinates'][0]] # lat, lon
-    m = folium.Map(location=map_center, zoom_start=13, tiles="CartoDB positron")
+    m = folium.Map(
+        location=map_center, 
+        zoom_start=8, 
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri Satellite"
+    )
 
     # Prepare data for TimestampedGeoJson
     features = [
@@ -43,36 +48,24 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
             'type': 'Feature',
             'geometry': {
                 'type': 'LineString',
-                'coordinates': [p['coordinates'] for p in points],
+                'coordinates': [p['coordinates'] for p in points], # p['coordinates'] is [lon, lat]
             },
             'properties': {
                 'times': [p['time'] for p in points],
-                'style': {
-                    'color': 'blue',
-                    'weight': 3,
-                    'opacity': 0.7
-                },
-                'icon': 'circle',
-                'iconstyle':{
-                    'fillColor': 'blue',
-                    'fillOpacity': 0.8,
-                    'stroke': 'true',
-                    'radius': 5
-                }
+                'style': {"color": "#FF4500", "weight": 3} # Updated style, removed icon and iconstyle
             }
         }
     ]
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period='PT1M', # Changed from PT0.5S to PT1S
-        add_last_point=True,
+        period="PT1M",
+        transition_time=50,
         auto_play=True,
-        loop=True,
+        loop=False,
+        add_last_point=False,
         max_speed=10,
-        loop_button=True,
-        date_options='YYYY-MM-DD HH:mm:ss',
-        time_slider_drag_update=True,
+        date_options="YYYY/MM/DD HH:mm:ss"
     ).add_to(m)
     
     # Add the original GPX track as a static line for reference
