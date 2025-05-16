@@ -27,6 +27,7 @@ layout: default
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script> <!-- Added leaflet-gpx library -->
 
     <style>
         #shikokuTimeDimensionMap {
@@ -39,13 +40,13 @@ layout: default
 </head>
 
 <!-- Navigation Tabs -->
-<nav style="display: flex; justify-content: flex-end; background: #222; padding: 1rem 2rem;">
-  <a href="index.html" style="color: #fff; text-decoration: none; margin-left: 2rem; font-weight: bold;">Home</a>
-  <a href="resume.html" style="color: #fff; text-decoration: none; margin-left: 2rem; font-weight: bold;">Resume</a>
-  <a href="publications.html" style="color: #fff; text-decoration: none; margin-left: 2rem; font-weight: bold;">Publications & Events</a>
-  <a href="projects.html" style="color: #fff; text-decoration: none; margin-left: 2rem; font-weight: bold;">Projects</a>
-  <a href="labs.html" style="color: #fff; text-decoration: none; margin-left: 2rem; font-weight: bold;">Labs</a>
-  <a href="sidestories.html" style="color: #fff; text-decoration: none; margin-left: 2rem; font-weight: bold;">Side Stories</a>
+<nav style="display: flex; justify-content: flex-end; background: #222; padding: 1.5rem 2rem;">
+  <a href="index.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Home</a>
+  <a href="resume.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Resume</a>
+  <a href="publications.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Publications & Events</a>
+  <a href="projects.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Projects</a>
+  <a href="labs.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Labs</a>
+  <a href="sidestories.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Side Stories</a>
 </nav>
 
 <section id="sidestories" style="padding: 2rem; background: #f9f9f9;">
@@ -64,61 +65,110 @@ layout: default
 
     // Initialize the map
     var shikokuMap = L.map('shikokuTimeDimensionMap', {
-        center: [33.8, 133.5], // Approximate center of Shikoku
-        zoom: 7, // Adjust zoom level as needed
+        // center: [33.8, 133.5], // Will be set by gpx load
+        // zoom: 7, // Will be set by gpx load
         zoomControl: true,
         preferCanvas: false,
     });
 
-    // Add a tile layer (OpenStreetMap is a common choice)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Add Esri World Imagery tile layer
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(shikokuMap);
 
     // TimeDimension plugin setup
-    // Define a custom TimeDimension control if needed (as in shikoku_track_ref.html)
     L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({
-        // Add any custom options or methods here if they were in the original
-        // For now, it's the same as the base L.Control.TimeDimension
+        // Add any custom options or methods here
     });
 
-    // Initialize the time dimension instance for the map
     shikokuMap.timeDimension = L.timeDimension({
-        // period: "PT5M", // Example: data interval, e.g., every 5 minutes
-        // currentTime: new Date() // Example: set initial time
-        // Add other TimeDimension options as needed
+        period: "PT1S", // Each point/segment will be shown for 1 second
+        // currentTime: new Date(Date.UTC(2023, 0, 1, 0, 0, 0)) // Set a start time
     });
 
-    // Create and add the TimeDimension control to the map
     var timeDimensionControl = new L.Control.TimeDimensionCustom({
-        // playerOptions: {
-        //     loop: true,
-        //     startOver:true,
-        //     transitionTime: 1000 // milliseconds
-        // },
-        // timeZones: ["Local"], // Example
-        position: 'bottomleft' // Or any other position
-        // Add other control options as needed
+        playerOptions: {
+            loop: true,
+            startOver: true,
+            transitionTime: 50, // milliseconds, as in folium_japan.py
+            // minSpeed: 1, // Adjust as needed
+            // maxSpeed: 10 // Adjust as needed
+        },
+        position: 'bottomleft'
     });
     shikokuMap.addControl(timeDimensionControl);
 
-    // IMPORTANT: To make the animation work, you need to add a TimeDimension layer
-    // (e.g., L.timeDimension.layer.geoJson) to the map and associate it with
-    // your time-series data.
-    // Example (replace with your actual data and layer type):
-    /*
-    var geoJsonLayer = L.geoJson(null, {
-        // GeoJSON layer options
-    });
-    var tdGeoJsonLayer = L.timeDimension.layer.geoJson(geoJsonLayer, {
-        updateTimeDimension: true,
-        updateTimeDimensionMode: 'recreate', // or 'update', 'replace'
-        addlastPoint: true,
-        // duration: 'PT1M', // if your data points have a duration
-    });
-    tdGeoJsonLayer.addTo(shikokuMap);
-    // You would then load your GeoJSON data into geoJsonLayer,
-    // ensuring it has 'times' or 'time' properties for TimeDimension to use.
-    */
+    // Load GPX track, extract coordinates, and create animated layer
+    var gpxTrackFile = 'track.gpx'; // Path to your GPX file
+    var gpxLayer = new L.GPX(gpxTrackFile, {
+        async: true,
+        marker_options: {
+            startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
+            endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png',
+            wptIconUrls: {
+                '': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-wpt.png',
+            }
+        },
+        polyline_options: {
+            color: 'rgba(0, 0, 255, 0.3)', // Static track less prominent
+            opacity: 0.3,
+            weight: 3,
+            lineCap: 'round'
+        }
+    }).on('loaded', function(e) {
+        shikokuMap.fitBounds(e.target.getBounds());
+
+        var layers = e.target.getLayers();
+        var coordinates = [];
+        if (layers.length > 0) {
+            // Assuming the first layer is the track polyline
+            var trackLayer = layers[0]; 
+            if (typeof trackLayer.getLatLngs === 'function') {
+                var latLngs = trackLayer.getLatLngs();
+                latLngs.forEach(function(latLng) {
+                    coordinates.push([latLng.lng, latLng.lat]); // GeoJSON format: [lon, lat]
+                });
+            }
+        }
+
+        if (coordinates.length > 0) {
+            var startTime = new Date(Date.UTC(2023, 0, 1, 0, 0, 0)); // Arbitrary start time
+            var timestamps = [];
+            for (var i = 0; i < coordinates.length; i++) {
+                var pointTime = new Date(startTime.getTime() + i * 1000); // 1 second interval
+                timestamps.push(pointTime.toISOString());
+            }
+
+            var geoJsonData = {
+                type: "Feature",
+                geometry: {
+                    type: "LineString",
+                    coordinates: coordinates
+                },
+                properties: {
+                    times: timestamps,
+                    style: { color: "#FF4500", weight: 3 } // Style from folium_japan.py
+                }
+            };
+
+            var animatedLayer = L.timeDimension.layer.geoJson(L.geoJson(geoJsonData), {
+                updateTimeDimension: true,
+                addlastPoint: true, // Show a marker at the current time point
+                updateTimeDimensionMode: 'recreate'
+            });
+            animatedLayer.addTo(shikokuMap);
+            
+            // If there are enough points, set current time for timeDimension
+            if (timestamps.length > 0) {
+                shikokuMap.timeDimension.setAvailableTimes(timestamps, 'replace');
+                // shikokuMap.timeDimension.setCurrentTime(new Date(timestamps[0]).getTime());
+            }
+        }
+    }).addTo(shikokuMap); // Adds the static GPX layer to the map
+
+    // Note: The static GPX track (from new L.GPX(...)) is added to the map.
+    // The animated GeoJSON layer will be drawn on top.
+    // The animation will be very short with only 8 points from track.gpx.
 
 </script>
