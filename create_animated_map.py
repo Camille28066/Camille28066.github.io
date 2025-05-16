@@ -63,7 +63,7 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period="PT10S", # Changed from PT1M to PT2M to cover more ground per step
+        period="PT3M", # Changed from PT1M to PT2M to cover more ground per step
         transition_time=50, # Changed from 50 to 30 for quicker transitions
         auto_play=True,
         loop=False,
