@@ -15,7 +15,7 @@ layout: default
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markerplayer/dist/leaflet.markerplayer.css"/> <!-- Changed to CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markerplayer/dist/leaflet.markerplayer.css"/> <!-- Changed to CDN path -->
     
     <meta name="viewport" content="width=device-width,
         initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -25,7 +25,7 @@ layout: default
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-    <script src="https://unpkg.com/leaflet.markerplayer/dist/leaflet.markerplayer.js"></script> <!-- Changed to CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.markerplayer/dist/leaflet.markerplayer.js"></script> <!-- Changed to CDN path -->
 
     <style>
         #shikokuMapContainer { /* Renamed ID for clarity */
@@ -131,19 +131,6 @@ layout: default
             playerDurations.push(pointIntervalMs);
         }
         
-        if (playerPoints.length > 0 && playerDurations.length === 0 && playerPoints.length === 1) {
-            // Handle single point case for duration if MarkerPlayer requires it
-            // Though typically animation needs at least two points.
-            // If MarkerPlayer supports a single point with a total duration, adjust here.
-            // For now, assuming animation implies >1 point.
-        } else if (playerPoints.length > 1 && playerDurations.length === 0) {
-            // This case should not happen if pointIntervalMs is used correctly for multiple points
-            console.warn("Player durations array is empty for multiple points. This might be an error.");
-            // Fallback: calculate total duration and let MarkerPlayer distribute it
-            // var totalDuration = (playerPoints.length -1) * pointIntervalMs;
-            // playerDurations = totalDuration; // This would make it a single number for total duration
-        }
-
         console.log("Points for MarkerPlayer:", playerPoints.length, "Durations per segment:", playerDurations.length);
 
         if (playerPoints.length < 2) {
