@@ -129,7 +129,14 @@ layout: default
             }
         });
 
-        if (coordinates.length > 1) {
+        console.log("Coordinates extracted:", coordinates.length);
+        if (coordinates.length <= 1) {
+            console.warn("Not enough coordinates to animate. GPX points found:", coordinates.length);
+            return; // Exit if not enough coordinates
+        }
+
+
+        if (coordinates.length > 1) { // This check is somewhat redundant due to the one above, but harmless
             var baseTimeForGeoJson = new Date(Date.UTC(2023, 0, 1, 0, 0, 0));
             var timestampsInGeoJson = [];
             for (var i = 0; i < coordinates.length; i++) {
@@ -166,24 +173,32 @@ layout: default
                 timeIncrementPerFrameMs = totalOriginalDataDurationMs;
             }
 
+            console.log("Total original data duration (ms):", totalOriginalDataDurationMs);
+            console.log("Time increment per frame (ms):", timeIncrementPerFrameMs);
+            console.log("Number of animation frames desired:", numAnimationFrames);
 
             var timestampsForControl = [];
             if (numAnimationFrames > 0) {
                  for (var i = 0; i < numAnimationFrames; i++) {
                     var frameTimeEpoch = baseTimeForGeoJson.getTime() + i * timeIncrementPerFrameMs;
-                    // Ensure frameTimeEpoch does not exceed the actual last data point's time
                     frameTimeEpoch = Math.min(frameTimeEpoch, baseTimeForGeoJson.getTime() + totalOriginalDataDurationMs);
-                    timestampsForControl.push(new Date(frameTimeEpoch).toISOString());
+                    var isoTime = new Date(frameTimeEpoch).toISOString();
+                    timestampsForControl.push(isoTime);
+                    // Log first/last 3 generated frame times for brevity in console
+                    if (i < 3 || i >= numAnimationFrames - 3) {
+                        console.log(`Generated frame ${i}: epoch=${frameTimeEpoch}, iso=${isoTime}`);
+                    }
                 }
-                // Ensure the last timestamp is exactly the end of data if numAnimationFrames > 1
                 if (numAnimationFrames > 1 && timestampsForControl.length > 0) {
                     timestampsForControl[timestampsForControl.length - 1] = new Date(baseTimeForGeoJson.getTime() + totalOriginalDataDurationMs).toISOString();
                 }
-                // Remove duplicates that might arise from Math.min and final adjustment
+                
+                console.log("Timestamps for control (before filter): count=", timestampsForControl.length, "sample:", timestampsForControl.slice(0,5));
                 if (timestampsForControl.length > 1) {
                     timestampsForControl = timestampsForControl.filter((item, index, self) =>
                         index === 0 || item !== self[index-1]);
                 }
+                console.log("Timestamps for control (after filter): count=", timestampsForControl.length, "sample:", timestampsForControl.slice(0,5));
             }
 
 
@@ -197,9 +212,36 @@ layout: default
                     mapPeriodSeconds = 1; // Default to 1s if no other info
                 }
 
+                console.log("Calculated mapPeriodSeconds:", mapPeriodSeconds);
                 shikokuMap.timeDimension.options.period = "PT" + mapPeriodSeconds + "S";
-                shikokuMap.timeDimension.setAvailableTimes(timestampsForControl, 'replace');
-                shikokuMap.timeDimension.setCurrentTime(new Date(timestampsForControl[0]).getTime());
+                
+                console.log("Setting available times with (count=" + timestampsForControl.length + "):", timestampsForControl.slice(0, 5)); // Log first 5
+                try {
+                    shikokuMap.timeDimension.setAvailableTimes(timestampsForControl, 'replace');
+                    var currentAvailableTimes = shikokuMap.timeDimension.getAvailableTimes();
+                    console.log("Available times in map.timeDimension (count=" + currentAvailableTimes.length + "):", currentAvailableTimes.slice(0,5));
+                    
+                    var firstTimeEpoch = new Date(timestampsForControl[0]).getTime();
+                    console.log("Setting current time to (epoch):", firstTimeEpoch, "from ISO:", timestampsForControl[0]);
+                    shikokuMap.timeDimension.setCurrentTime(firstTimeEpoch);
+                    
+                    var currentTimeInDimension = shikokuMap.timeDimension.getCurrentTime();
+                    console.log("Current time in map.timeDimension (epoch):", currentTimeInDimension);
+                    console.log("Current time index:", shikokuMap.timeDimension.getCurrentTimeIndex());
+
+                    if (currentAvailableTimes.length === 0 && timestampsForControl.length > 0) {
+                        console.error("CRITICAL: Available times became empty after setAvailableTimes, but timestampsForControl was not empty!");
+                    }
+                    if (isNaN(currentTimeInDimension)) {
+                        console.error("CRITICAL: Current time is NaN after setCurrentTime!");
+                    }
+                    if (currentAvailableTimes.indexOf(currentTimeInDimension) === -1 && currentAvailableTimes.length > 0) {
+                        console.error("CRITICAL: Current time is not in available times list!");
+                    }
+
+                } catch (error) {
+                    console.error("Error during setAvailableTimes or setCurrentTime:", error);
+                }
                 
                 console.log("Number of animation frames for control: " + timestampsForControl.length);
                 console.log("Player transitionTime: " + playerTransitionTimeMs + "ms");
@@ -207,11 +249,12 @@ layout: default
                 console.log("Estimated animation duration: " + (timestampsForControl.length -1) * playerTransitionTimeMs / 1000 + "s");
 
             } else {
-                 console.warn("Not enough data or frames to create animation timeline.");
+                 console.warn("Not enough data or frames to create animation timeline. timestampsForControl is empty.");
             }
 
         } else {
-            console.warn("No coordinates or insufficient coordinates found in GPX to animate.");
+            // This case should be caught by the earlier check, but kept for safety.
+            console.warn("No coordinates or insufficient coordinates found in GPX to animate (secondary check).");
         }
     }).on('error', function(e) {
         console.error("Error loading GPX file: ", e.err);
