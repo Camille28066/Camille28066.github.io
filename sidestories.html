@@ -52,7 +52,7 @@ layout: default
 <section id="sidestories" style="padding: 2rem; background: #f9f9f9;">
   <h2 style="text-align: center; color: #333; margin-bottom: 2rem;">Side Stories</h2>
   <!-- Content for sidestories page will go here -->
-  <p style="text-align: center;">This section features an interactive map with a time dimension control, similar to the Shikoku track reference.</p>
+  <p style="text-align: center;">Section japan.</p>
   
   <div id="shikokuTimeDimensionMap"></div>
 
@@ -119,18 +119,24 @@ layout: default
     }).on('loaded', function(e) {
         shikokuMap.fitBounds(e.target.getBounds());
 
-        var layers = e.target.getLayers();
         var coordinates = [];
-        if (layers.length > 0) {
-            // Assuming the first layer is the track polyline
-            var trackLayer = layers[0]; 
-            if (typeof trackLayer.getLatLngs === 'function') {
-                var latLngs = trackLayer.getLatLngs();
-                latLngs.forEach(function(latLng) {
-                    coordinates.push([latLng.lng, latLng.lat]); // GeoJSON format: [lon, lat]
-                });
+        // Correctly extract coordinates from all polylines in the GPX
+        e.target.eachLayer(function(layer) {
+            if (layer instanceof L.Polyline) {
+                var latLngs = layer.getLatLngs();
+                // Handle both simple polylines and multi-polylines (though track.gpx is simple)
+                function processLatLngs(arr) {
+                    arr.forEach(function(latLng) {
+                        if (latLng instanceof L.LatLng) {
+                            coordinates.push([latLng.lng, latLng.lat]); // GeoJSON format: [lon, lat]
+                        } else if (Array.isArray(latLng)) { // For nested arrays in multi-polylines
+                            processLatLngs(latLng);
+                        }
+                    });
+                }
+                processLatLngs(latLngs);
             }
-        }
+        });
 
         if (coordinates.length > 0) {
             var startTime = new Date(Date.UTC(2023, 0, 1, 0, 0, 0)); // Arbitrary start time
@@ -148,23 +154,34 @@ layout: default
                 },
                 properties: {
                     times: timestamps,
-                    style: { color: "#FF4500", weight: 3 } // Style from folium_japan.py
+                    style: { color: "#FF4500", weight: 3 } // Style for the animated line
                 }
             };
+            
+            // Create a GeoJSON layer with the extracted data and style
+            var baseGeoJsonLayer = L.geoJson(geoJsonData, {
+                style: function (feature) {
+                    return feature.properties.style;
+                }
+            });
 
-            var animatedLayer = L.timeDimension.layer.geoJson(L.geoJson(geoJsonData), {
+            var animatedLayer = L.timeDimension.layer.geoJson(baseGeoJsonLayer, {
                 updateTimeDimension: true,
-                addlastPoint: true, // Show a marker at the current time point
-                updateTimeDimensionMode: 'recreate'
+                addlastPoint: false, // Set to false to animate line segments
+                updateTimeDimensionMode: 'replace' // Folium typically uses 'replace'
             });
             animatedLayer.addTo(shikokuMap);
             
-            // If there are enough points, set current time for timeDimension
             if (timestamps.length > 0) {
                 shikokuMap.timeDimension.setAvailableTimes(timestamps, 'replace');
+                // Optionally, set current time to the beginning of the track
                 // shikokuMap.timeDimension.setCurrentTime(new Date(timestamps[0]).getTime());
             }
+        } else {
+            console.warn("No coordinates found in GPX to animate.");
         }
+    }).on('error', function(e) {
+        console.error("Error loading GPX file: ", e.err);
     }).addTo(shikokuMap); // Adds the static GPX layer to the map
 
     // Note: The static GPX track (from new L.GPX(...)) is added to the map.
