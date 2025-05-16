@@ -75,7 +75,7 @@ layout: default
     L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({});
 
     shikokuMap.timeDimension = L.timeDimension({
-        // period: Will be set dynamically
+        // period: Will be set by setAvailableTimes or by the layer
     });
 
     var desiredAnimationDurationSeconds = 60;
@@ -87,7 +87,7 @@ layout: default
         playerOptions: {
             loop: true,
             startOver: true,
-            transitionTime: playerTransitionTimeMs, 
+            transitionTime: playerTransitionTimeMs,
         },
         position: 'bottomleft'
     });
@@ -112,157 +112,104 @@ layout: default
         shikokuMap.fitBounds(e.target.getBounds());
 
         var coordinates = [];
-        e.target.eachLayer(function(layer) {
-            if (layer instanceof L.Polyline) {
-                var latLngs = layer.getLatLngs();
-                function processLatLngs(arr) {
-                    arr.forEach(function(latLng) {
-                        if (latLng instanceof L.LatLng) {
-                            coordinates.push([latLng.lng, latLng.lat]);
-                        } else if (Array.isArray(latLng)) {
-                            processLatLngs(latLng);
-                        }
+        // Define processLatLngs to correctly populate coordinates
+        function processLatLngs(latlngsArray) {
+            if (latlngsArray && latlngsArray.length > 0) {
+                if (Array.isArray(latlngsArray[0]) && latlngsArray[0][0] instanceof L.LatLng) { // Array of arrays of LatLngs (MultiPolyline)
+                    latlngsArray.forEach(function(segment) {
+                        segment.forEach(function(latlng) {
+                            coordinates.push([latlng.lng, latlng.lat]);
+                        });
+                    });
+                } else if (latlngsArray[0] instanceof L.LatLng) { // Array of LatLngs (Polyline)
+                    latlngsArray.forEach(function(latlng) {
+                        coordinates.push([latlng.lng, latlng.lat]);
                     });
                 }
-                processLatLngs(latLngs);
+            }
+        }
+
+        e.target.eachLayer(function(layer) {
+            if (layer instanceof L.Polyline) {
+                processLatLngs(layer.getLatLngs());
             }
         });
 
         console.log("Coordinates extracted:", coordinates.length);
         if (coordinates.length <= 1) {
             console.warn("Not enough coordinates to animate. GPX points found:", coordinates.length);
-            return; 
+            return;
         }
 
-        // This check is somewhat redundant due to the one above, but harmless
-        if (coordinates.length > 1) { 
-            var baseTimeForGeoJson = new Date(Date.UTC(2023, 0, 1, 0, 0, 0));
-            var timestampsInGeoJson = [];
-            for (var i = 0; i < coordinates.length; i++) {
-                // Changed to 0.5 second (500ms) interval for data points
-                var pointTime = new Date(baseTimeForGeoJson.getTime() + i * 500); 
-                timestampsInGeoJson.push(pointTime.toISOString());
-            }
+        var baseTimeForGeoJson = new Date(Date.UTC(2023, 0, 1, 0, 0, 0));
+        var timestampsInGeoJson = [];
+        for (var i = 0; i < coordinates.length; i++) {
+            var pointTime = new Date(baseTimeForGeoJson.getTime() + i * 500); // 0.5 second interval for data points
+            timestampsInGeoJson.push(pointTime.toISOString());
+        }
 
-            var geoJsonData = {
-                type: "Feature",
-                geometry: { type: "LineString", coordinates: coordinates },
-                properties: {
-                    times: timestampsInGeoJson,
-                    style: { color: "#FF4500", weight: 3 }
+        var geoJsonData = {
+            type: "Feature",
+            geometry: { type: "LineString", coordinates: coordinates },
+            properties: {
+                times: timestampsInGeoJson, // Crucial for L.timeDimension.layer.geoJson
+                style: { // Style for the animated track
+                    color: 'rgba(255, 0, 0, 0.8)', // Red, more opaque
+                    weight: 5
                 }
-            };
+            }
+        };
+        
+        var baseGeoJsonLayer = L.geoJson(geoJsonData, {
+            style: function (feature) { return feature.properties.style; }
+        });
+
+        var animatedLayer = L.timeDimension.layer.geoJson(baseGeoJsonLayer, {
+            updateTimeDimension: true,
+            addlastPoint: true, // Show a marker at the current time position
+            updateTimeDimensionMode: 'update',
+        });
+        animatedLayer.addTo(shikokuMap);
+        
+        var totalOriginalDataDurationMs = (coordinates.length - 1) * 500;
+        var timeIncrementPerFrameMs = 0;
+        if (numAnimationFrames > 1) {
+            timeIncrementPerFrameMs = totalOriginalDataDurationMs / (numAnimationFrames - 1);
+        } else if (numAnimationFrames === 1) {
+            timeIncrementPerFrameMs = totalOriginalDataDurationMs; // Single frame shows the end state
+        }
+
+        console.log("Total original data duration (ms) based on 0.5s interval:", totalOriginalDataDurationMs);
+        console.log("Time increment per frame (ms):", timeIncrementPerFrameMs);
+        console.log("Number of animation frames desired:", numAnimationFrames);
+
+        var timestampsForControl = [];
+        if (numAnimationFrames > 0) {
+            for (var k = 0; k < numAnimationFrames; k++) { // Use k to avoid conflict with outer i
+                var frameTimeMs = baseTimeForGeoJson.getTime() + k * timeIncrementPerFrameMs;
+                timestampsForControl.push(new Date(frameTimeMs).toISOString());
+            }
+            // Ensure the last frame timestamp corresponds to the total duration if multiple frames
+            if (numAnimationFrames > 1 && timestampsForControl.length > 0) {
+                timestampsForControl[timestampsForControl.length - 1] = new Date(baseTimeForGeoJson.getTime() + totalOriginalDataDurationMs).toISOString();
+            }
             
-            var baseGeoJsonLayer = L.geoJson(geoJsonData, {
-                style: function (feature) { return feature.properties.style; }
-            });
-
-            var animatedLayer = L.timeDimension.layer.geoJson(baseGeoJsonLayer, {
-                updateTimeDimension: true,
-                addlastPoint: false,
-                updateTimeDimensionMode: 'update',
-            });
-            animatedLayer.addTo(shikokuMap);
-            
-            // Generate timestamps for the animation control
-            // Adjusted to 0.5 second (500ms) interval per original data point
-            var totalOriginalDataDurationMs = (coordinates.length - 1) * 500; 
-            var timeIncrementPerFrameMs = 0;
-            if (numAnimationFrames > 1) {
-                timeIncrementPerFrameMs = totalOriginalDataDurationMs / (numAnimationFrames - 1);
-            } else if (numAnimationFrames === 1) {
-                timeIncrementPerFrameMs = totalOriginalDataDurationMs;
-            }
-
-
-            console.log("Total original data duration (ms) based on 0.5s interval:", totalOriginalDataDurationMs);
-            console.log("Time increment per frame (ms):", timeIncrementPerFrameMs);
-            console.log("Number of animation frames desired:", numAnimationFrames);
-
-            var timestampsForControl = [];
-            if (numAnimationFrames > 0) {
-                 for (var i = 0; i < numAnimationFrames; i++) {
-                    var frameTimeEpoch = baseTimeForGeoJson.getTime() + i * timeIncrementPerFrameMs;
-                    frameTimeEpoch = Math.min(frameTimeEpoch, baseTimeForGeoJson.getTime() + totalOriginalDataDurationMs);
-                    var isoTime = new Date(frameTimeEpoch).toISOString();
-                    timestampsForControl.push(isoTime);
-                    // Log first/last 3 generated frame times for brevity in console
-                    if (i < 3 || i >= numAnimationFrames - 3) {
-                        console.log(`Generated frame ${i}: epoch=${frameTimeEpoch}, iso=${isoTime}`);
-                    }
-                }
-                if (numAnimationFrames > 1 && timestampsForControl.length > 0) {
-                    timestampsForControl[timestampsForControl.length - 1] = new Date(baseTimeForGeoJson.getTime() + totalOriginalDataDurationMs).toISOString();
-                }
-                
-                console.log("Timestamps for control (before filter): count=", timestampsForControl.length, "sample:", timestampsForControl.slice(0,5));
-                if (timestampsForControl.length > 1) {
-                    timestampsForControl = timestampsForControl.filter((item, index, self) =>
-                        index === 0 || item !== self[index-1]);
-                }
-                console.log("Timestamps for control (after filter): count=", timestampsForControl.length, "sample:", timestampsForControl.slice(0,5));
-            }
-
+            console.log("Timestamps for control: count=", timestampsForControl.length, "sample:", timestampsForControl.slice(0,5));
 
             if (timestampsForControl.length > 0) {
-                var mapPeriodSeconds = 0;
-                if (timeIncrementPerFrameMs > 0) {
-                    mapPeriodSeconds = Math.max(1, Math.round(timeIncrementPerFrameMs / 1000)); 
-                } else if (timestampsForControl.length === 1) { 
-                     mapPeriodSeconds = Math.max(1, Math.round(totalOriginalDataDurationMs / 1000));
-                } else { 
-                    mapPeriodSeconds = 1; 
-                }
-
-                console.log("Calculated mapPeriodSeconds:", mapPeriodSeconds);
-                shikokuMap.timeDimension.options.period = "PT" + mapPeriodSeconds + "S";
-                
-                console.log("Setting available times with (count=" + timestampsForControl.length + "):", timestampsForControl.slice(0, 5)); // Log first 5
-                try {
-                    shikokuMap.timeDimension.setAvailableTimes(timestampsForControl, 'replace');
-                    var currentAvailableTimes = shikokuMap.timeDimension.getAvailableTimes();
-                    console.log("Available times in map.timeDimension (count=" + currentAvailableTimes.length + "):", currentAvailableTimes.slice(0,5));
-                    
-                    var firstTimeEpoch = new Date(timestampsForControl[0]).getTime();
-                    console.log("Setting current time to (epoch):", firstTimeEpoch, "from ISO:", timestampsForControl[0]);
-                    shikokuMap.timeDimension.setCurrentTime(firstTimeEpoch);
-                    
-                    var currentTimeInDimension = shikokuMap.timeDimension.getCurrentTime();
-                    console.log("Current time in map.timeDimension (epoch):", currentTimeInDimension);
-                    console.log("Current time index:", shikokuMap.timeDimension.getCurrentTimeIndex());
-
-                    if (currentAvailableTimes.length === 0 && timestampsForControl.length > 0) {
-                        console.error("CRITICAL: Available times became empty after setAvailableTimes, but timestampsForControl was not empty!");
-                    }
-                    if (isNaN(currentTimeInDimension)) {
-                        console.error("CRITICAL: Current time is NaN after setCurrentTime!");
-                    }
-                    if (currentAvailableTimes.indexOf(currentTimeInDimension) === -1 && currentAvailableTimes.length > 0) {
-                        console.error("CRITICAL: Current time is not in available times list!");
-                        console.log("Current time (epoch):", currentTimeInDimension, "First available time (epoch):", currentAvailableTimes[0]);
-                        console.log("Is current time in available times array?", currentAvailableTimes.includes(currentTimeInDimension));
-
-                    }
-
-                } catch (error) {
-                    console.error("Error during setAvailableTimes or setCurrentTime:", error);
-                }
-                
-                console.log("Number of animation frames for control: " + timestampsForControl.length);
-                console.log("Player transitionTime: " + playerTransitionTimeMs + "ms");
-                console.log("Map timeDimension period: " + shikokuMap.timeDimension.options.period);
-                console.log("Estimated animation duration: " + (timestampsForControl.length -1) * playerTransitionTimeMs / 1000 + "s");
-
+                shikokuMap.timeDimension.setAvailableTimes(timestampsForControl, 'replaceAll');
+                // Optional: Adjust period if needed, though setAvailableTimes usually suffices
+                // var mapPeriodSeconds = Math.max(1, Math.round(timeIncrementPerFrameMs / 1000));
+                // shikokuMap.timeDimension.options.period = "PT" + mapPeriodSeconds + "S";
+                // console.log("Set map timeDimension period to PT" + mapPeriodSeconds + "S");
             } else {
-                 console.warn("Not enough data or frames to create animation timeline. timestampsForControl is empty.");
+                console.warn("No timestamps generated for the time dimension control (numAnimationFrames > 0 but timestampsForControl is empty).");
             }
-
         } else {
-            // This case should be caught by the earlier check, but kept for safety.
-            console.warn("No coordinates or insufficient coordinates found in GPX to animate (secondary check).");
+            console.warn("numAnimationFrames is 0, cannot generate timestamps for control.");
         }
     }).on('error', function(e) {
-        console.error("Error loading GPX file: ", e.err);
+        console.error("Error loading GPX file: ", e.err, e);
     }).addTo(shikokuMap);
 
 </script>
