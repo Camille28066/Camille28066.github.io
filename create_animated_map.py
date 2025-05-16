@@ -65,7 +65,7 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period='PT0.5S', # Corresponds to 0.5 second interval in update_gpx_time.py
+        period='PT1S', # Changed from PT0.5S to PT1S
         add_last_point=True,
         auto_play=True,
         loop=True,
