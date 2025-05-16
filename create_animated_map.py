@@ -63,12 +63,12 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period="PT3M", # Changed from PT1M to PT2M to cover more ground per step
+        period="PT1M", # Changed from PT1M to PT2M to cover more ground per step
         transition_time=100, # Changed from 50 to 30 for quicker transitions
         auto_play=True,
         loop=False,
         add_last_point=False,
-        max_speed=1, # You can increase this if you want the slider to go faster
+        max_speed=2, # You can increase this if you want the slider to go faster
         date_options="YYYY/MM/DD HH:mm:ss"
     ).add_to(m)
     
