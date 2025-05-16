@@ -33,7 +33,7 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
         return
         
     # Create a Folium map centered around the first point
-    map_center = [track_coordinates_for_animation[0][1], track_coordinates_for_animation[0][0]] # lat, lon
+    map_center = [34.175062, 134.491041] # Updated map center
     m = folium.Map(
         location=map_center, 
         zoom_start=8, 
@@ -63,12 +63,12 @@ def create_animation_from_gpx(gpx_file_path, output_html_path):
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection', 'features': features},
-        period="PT10S", # Changed from PT1M to PT10S (10 seconds)
-        transition_time=200, # Increased from 100 to 200 milliseconds
+        period="PT1M", # Changed from PT1M to PT10S (10 seconds)
+        transition_time=50, # Increased from 100 to 200 milliseconds
         auto_play=True,
         loop=False,
         add_last_point=False,
-        max_speed=1, # Optionally, reduce max_speed further if the control is too sensitive
+        max_speed=10, # Optionally, reduce max_speed further if the control is too sensitive
         date_options="YYYY/MM/DD HH:mm:ss"
     ).add_to(m)
     
