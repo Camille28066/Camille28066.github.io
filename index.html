@@ -39,9 +39,23 @@ layout: default
       }
       nav a:hover {
         background: rgba(255, 255, 255, 0.2);
+      }      img[src="camillelab.png"] { 
+        width: 120px; 
+        height: 120px; 
+        float: none;
+        display: block;
+        margin: 0 auto 1rem auto;
       }
-      .social-icons { text-align: center; }
-      img[src="camillelab.png"] { width: 120px; height: 120px; }
+      .social-links {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+        clear: both;
+      }
+      .social-links a {
+        margin: 0 0.5rem;
+      }
     }
   </style>
 </head>
@@ -64,12 +78,11 @@ layout: default
       <h3>Geospatial Data Scientist | Environmental & Climate Studies</h3>
       <p>
         
-      </p>
-      <div style="margin-top: 1rem;">
-        <a href="mailto:camille.m.labrousse@gmail.com" title="Email" style="margin-right: 1rem; font-size: 1.6rem; text-decoration: none;"><i class="fa-solid fa-envelope"></i></a>
-        <a href="https://www.linkedin.com/in/camille-labrousse-942156178/" target="_blank" title="LinkedIn" style="margin-right: 1rem; font-size: 1.6rem; text-decoration: none;"><i class="fa-brands fa-linkedin"></i></a>
-        <a href="https://www.researchgate.net/profile/Camille-Labrousse?ev=hdr_xprf" target="_blank" title="ResearchGate" style="margin-right: 1rem; font-size: 1.6rem; text-decoration: none;"><i class="fa-brands fa-researchgate"></i></a>
-        <a href="https://github.com/Camille28066" target="_blank" title="GitHub" style="margin-right: 1rem; font-size: 1.6rem; text-decoration: none;"><i class="fa-brands fa-github"></i></a>
+      </p>      <div class="social-links" style="margin-top: 1rem;">
+        <a href="mailto:camille.m.labrousse@gmail.com" title="Email" style="font-size: 1.6rem; text-decoration: none;"><i class="fa-solid fa-envelope"></i></a>
+        <a href="https://www.linkedin.com/in/camille-labrousse-942156178/" target="_blank" title="LinkedIn" style="font-size: 1.6rem; text-decoration: none;"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="https://www.researchgate.net/profile/Camille-Labrousse?ev=hdr_xprf" target="_blank" title="ResearchGate" style="font-size: 1.6rem; text-decoration: none;"><i class="fa-brands fa-researchgate"></i></a>
+        <a href="https://github.com/Camille28066" target="_blank" title="GitHub" style="font-size: 1.6rem; text-decoration: none;"><i class="fa-brands fa-github"></i></a>
       </div>
     </div>  </div>  <!-- Map Section -->  <div style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
     <img src="/assets/Europe_rivers.png" alt="Map of European River Networks" style="width: 100%; max-height: 300px; min-height: 200px; object-fit: contain; border-radius: 12px; box-shadow: 0 2px 12px #bbb;" />
