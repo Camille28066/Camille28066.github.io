@@ -3,12 +3,43 @@ layout: default
 ---
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>    @media screen and (max-width: 600px) {
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">  <style>
+    /* Common nav styles */
+    nav {
+      display: flex;
+      justify-content: flex-end;
+      background: #222;
+      padding: 1.5rem 2rem;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    
+    /* Mobile-specific styles */
+    @media screen and (max-width: 600px) {
       h1 { font-size: 1.8em; margin-bottom: 0.5rem; }
       h3 { font-size: 1.2em; }
-      nav { padding: 1rem; flex-wrap: wrap; justify-content: center; }
-      nav a { margin: 0.5rem; }
+      nav {
+        padding: 0.8rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      nav a {
+        margin: 0.2rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        font-size: 0.9em;
+        transition: background-color 0.3s;
+      }
+      nav a:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
       .social-icons { text-align: center; }
       img[src="camillelab.png"] { width: 120px; height: 120px; }
     }
@@ -16,11 +47,12 @@ layout: default
 </head>
 
 <!-- Navigation Tabs -->
-<nav style="display: flex; justify-content: flex-end; background: #222; padding: 1.5rem 2rem;">
-  <a href="index.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold; white-space: nowrap;">Home</a>
-  <a href="resume.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold; white-space: nowrap;">Resume</a>
-  <a href="publications.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold; white-space: nowrap;">Publications & Events</a>  <a href="projects.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold; white-space: nowrap;">Projects & Labs</a>
-  <a href="sidestories.html"style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold; white-space: nowrap;">Side Stories</a>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="resume.html">Resume</a>
+  <a href="publications.html">Publications & Events</a>
+  <a href="projects.html">Projects & Labs</a>
+  <a href="sidestories.html">Side Stories</a>
 </nav>
 
 <!-- Hero Section -->
