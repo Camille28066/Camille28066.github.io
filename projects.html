@@ -2,6 +2,31 @@
 layout: default
 ---
 
+<style>
+.responsive-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.image-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+}
+
+.image-caption {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+</style>
+
 <!-- Navigation Tabs -->
 <nav style="display: flex; justify-content: flex-end; background: #222; padding: 1.5rem 2rem;">
   <a href="index.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Home</a>
@@ -15,8 +40,13 @@ layout: default
 
   <!-- Projects Section -->
   <div style="margin-bottom: 3rem;">
-    <h3 style="color: #333; margin-bottom: 1.5rem; text-align: center;">Coming Soon Soon!</h3>
-    <!-- Content for projects will go here -->
+    <h3 style="color: #333; margin-bottom: 1.5rem; text-align: center;">Artificial Lights At Night in the world</h3>
+    
+    <div class="image-container">
+      <img src="assets/Moscow.png" alt="Moscow at night from ISS" class="responsive-image">
+      <p class="image-caption">Moscow at night, photographed from the International Space Station on September 27, 2014.<br>
+      NASA Photo ID: ISS041-E-45656. Image available at <a href="https://eol.jsc.nasa.gov/SearchPhotos/" style="color: #007bff; text-decoration: none;">https://eol.jsc.nasa.gov/SearchPhotos/</a></p>
+    </div>
   </div>
 
   <!-- Labs Section -->
