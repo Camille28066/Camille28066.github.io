@@ -1,111 +1,101 @@
----
-layout: default
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>List of Publications & Conferences — Camille Labrousse</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; margin: 0; padding: 24px; background: #f7f7f7; color: #222; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border-radius: 8px; padding: 32px 40px; }
+    h2 { color: #3d83c5; text-align: center; font-size: 1.6rem; font-weight: 500; border-bottom: 2px solid #3d83c5; padding-bottom: 0.4rem; margin-bottom: 1rem; }
+    h3 { color: #3d83c5; font-size: 1.35rem; font-weight: 500; border-bottom: 1px solid #3d83c5; padding-bottom: 0.2rem; margin-top: 1.2rem; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { margin-bottom: 0.7rem; padding-left: 0.7rem; border-left: 3px solid #3d83c5; font-size: 0.95rem; text-align: justify; text-justify: inter-word; hyphens: auto; }
+    a { color: #007bff; text-decoration: none; }
+    p { text-align: justify; text-justify: inter-word; hyphens: auto; }
 
-<!-- Navigation Tabs -->
-<nav style="display: flex; justify-content: flex-end; background: #222; padding: 1.5rem 2rem;">
-  <a href="index.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Home</a>
-  <a href="resume.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Resume</a>
-  <a href="publications.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Publications & Events</a>  <a href="projects.html" style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Projects & Labs</a>
-  <a href="sidestories.html"style="color: #fff; text-decoration: none; margin-left: 1.5rem; font-weight: bold;">Side Stories</a>
-</nav>
+    /* Awards list (no table) */
+    .awards-list { list-style: none; padding-left: 0; margin-top: 0.5rem; }
+    .award-item { margin-bottom: 0.7rem; padding-left: 0.7rem; border-left: 3px solid #3d83c5; font-size: 0.95rem; color: #555; }
+    .award-year { font-weight: bold; color: #333; margin-right: 6px; }
+    .award-badge { display: inline-block; background: #e8f5f3; color: #1b5e20; border: 1px solid #a5d6a7; border-radius: 12px; padding: 2px 8px; font-size: 0.8rem; margin-left: 8px; }
 
-<section id="publications" style="padding: 2rem; background: #f9f9f9;">
-  <h2 style="text-align: center; color: #333; margin-bottom: 2rem;">Publications & Conferences</h2>
+    /* Extra spacing helper */
+    .extra-top-space { margin-top: 3rem; }
 
-  <!-- Peer-reviewed publications -->
-  <div style="margin-bottom: 2rem;">
-    <h3 style="color: #4db6ac; border-bottom: 2px solid #4db6ac; padding-bottom: 0.5rem;">Peer-reviewed publications</h3>
-    <ul style="list-style-type: none; padding-left: 0; font-size: small;">
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. (2025). <span style="font-style: italic;"> Lighting the way: A global analysis of road lighting outside of urban areas</span>. Science of The Total Environment, 1006, 180877. DOI: <a href="https://doi.org/10.1016/j.scitotenv.2025.180877" style="color: #007bff; text-decoration: none;">10.1016/j.scitotenv.2025.180877</a>
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. (2025). <span style="font-style: italic;">Quantifying the impact of the transition to LED lighting on night sky brightness and colour using ground-based measurements and satellite imagery</span>. Journal of Quantitative Spectroscopy and Radiative Transfer, 340, 109450. DOI: <a href="https://doi.org/10.1016/j.jqsrt.2025.109450" style="color: #007bff; text-decoration: none;">10.1016/j.jqsrt.2025.109450</a>
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Pinel, S., Sadaoui, M., Lacquement, G. (2022). <span style="font-style: italic;">Declining water resources in response to global warming and changes in atmospheric circulation patterns over southern Mediterranean France</span>. Hydrology and Earth System Sciences, 26, 6055–6071. DOI: <a href="https://doi.org/10.5194/hess-26-6055-2022" style="color: #007bff; text-decoration: none;">10.5194/hess-26-6055-2022</a>
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Pinel, S., Sadaoui, M., Lacquement, G. (2020). <span style="font-style: italic;">Unravelling Climate and Anthropogenic Forcings on the Evolution of Surface Water Resources in Southern France</span>. Water, 12, 3581. DOI: <a href="https://doi.org/10.3390/w12123581" style="color: #007bff; text-decoration: none;">10.3390/w12123581</a>
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        Dessandier, P.A., Knies, J., Plaza-Flaverola, A., <span style="font-weight: bold;">Labrousse, C.</span>, Renoult, M., Panieri, G. (2021). <span style="font-style: italic;">Ice sheet melt drove methane emissions in the Arctic during the last two interglacials</span>. Geology, 49, 799-803. DOI: <a href="https://doi.org/10.1130/G48580.1" style="color: #007bff; text-decoration: none;">10.1130/G48580.1</a>
-      </li>
+    /* Print styles */
+    @media print {
+      /* Ensure clean print background and remove shadows */
+      body { background: #fff; padding: 0; }
+      .container { box-shadow: none; border-radius: 0; }
+
+      /* Start these sections on new pages */
+      .break-before-page { break-before: page; page-break-before: always; }
+
+      /* Avoid breaking headings from their content */
+      h2, h3 { break-after: avoid-page; page-break-after: avoid; }
+
+      /* Reduce orphaned lines and avoid breaking list items */
+      ul, li { break-inside: avoid; page-break-inside: avoid; }
+
+      /* Optional: keep links readable without blue color */
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>List of Publications & Conferences</h2>
+
+    <h3>Peer-reviewed publications</h3>
+    <ul>
+      <li>Eitan, A., Barkan, L., Aner, I., Nisenbaum, I., <span style="font-weight: bold;">Labrousse, C.</span>, Levin, N. (under review). <span style="font-style: italic;">Governing in the Dark: Municipal LED streetlighting under decentralised governance</span>.</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. (in prep). <span style="font-style: italic;">Cross-continental variation in urban lighting from in-situ and satellite perspectives</span>.</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Haspel, C., & Levin, N. (2025). <span style="font-style: italic;">Lighting the way: A global analysis of road lighting outside of urban areas</span>. Science of The Total Environment, 1006, 180877. DOI: <a href="https://doi.org/10.1016/j.scitotenv.2025.180877">10.1016/j.scitotenv.2025.180877</a></li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. (2025). <span style="font-style: italic;">Quantifying the impact of the transition to LED lighting on night sky brightness and colour using ground-based measurements and satellite imagery</span>. Journal of Quantitative Spectroscopy and Radiative Transfer, 340, 109450. DOI: <a href="https://doi.org/10.1016/j.jqsrt.2025.109450">10.1016/j.jqsrt.2025.109450</a></li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Pinel, S., Sadaoui, M., Lacquement, G. (2022). <span style="font-style: italic;">Declining water resources in response to global warming and changes in atmospheric circulation patterns over southern Mediterranean France</span>. Hydrology and Earth System Sciences, 26, 6055–6071. DOI: <a href="https://doi.org/10.5194/hess-26-6055-2022">10.5194/hess-26-6055-2022</a></li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Pinel, S., Sadaoui, M., Lacquement, G. (2020). <span style="font-style: italic;">Unravelling Climate and Anthropogenic Forcings on the Evolution of Surface Water Resources in Southern France</span>. Water, 12, 3581. DOI: <a href="https://doi.org/10.3390/w12123581">10.3390/w12123581</a></li>
+      <li>Dessandier, P.A., Knies, J., Plaza-Flaverola, A., <span style="font-weight: bold;">Labrousse, C.</span>, Renoult, M., Panieri, G. (2021). <span style="font-style: italic;">Ice sheet melt drove methane emissions in the Arctic during the last two interglacials</span>. Geology, 49, 799-803. DOI: <a href="https://doi.org/10.1130/G48580.1">10.1130/G48580.1</a></li>
     </ul>
+
+    <h3 class="extra-top-space">Non peer-reviewed publications and non-scientific events</h3>
+    <ul>
+      <li>Cafe des Sciences, French Institute of Tel Aviv (Presentation, open to public, 2022) <span style="font-style: italic;">Land use changes in the Arava valley: What consequences for the local climate?</span> - Talk -</li>
+      <li>Radio Kan Israel (2022) <span style="font-style: italic;">A short intervention on the heatwaves in Europe</span> - Talk -</li>
+      <li>Natura Catalana (monthly journal for the Catalan Natural Reserves - in french), November 2020 n°40, p.8. <span style="font-weight: bold;">Camille Labrousse</span>. <span style="font-style: italic;">L'Agly, le Tech et la Têt. Evolution des fleuves cotiers des Pyrenees-Orientales</span> - Article writing -</li>
+      <li>1er Cahier Régional Occitanie sur les Changements Climatiques (CROCC_2021) (1st Regional Summary of Occitanie on Climatic Changes - in french), Chapter 'Water'. <span style="font-weight: bold;">Labrousse Camille</span>, Ludwig Wolfgang. <span style="font-style: italic;">Réduction des ressources en eau superfi- cielles en Occitanie-Est sur la période 1959-2018 associée aux changements climatiques et perspectives pour le 21ème siècle</span> - Chapter writing and review -</li>
+    </ul>
+
+    <h3 class="break-before-page">Conferences</h3>
+    <ul style="list-style-type: none; padding-left: 0; font-size: small;">
+      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #3d83c5;">
+        <span style="font-weight: bold;">Labrousse, C.</span>, Haspel, C., Levin, N.  <span style="font-style: italic;">Tracing the world’s highways through nighttime light.</span> ALAN, Westport, 2025 - Poster -
+      </li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Haspel, C., Levin, N. <span style="font-style: italic;">Measuring the night: Ground-based and satellite imagery analysis on the shift from HPS to LED street-lighting and its effects on sky brightness and color.</span> IGARSS, Brisbane, 2025 - Talk -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. <span style="font-style: italic;">Lighting the way: Monitoring the impact of streelight retrofits on Artificial Night Light in Sha'ar HaGai, Israel.</span> Climate Change,Sustainability and Environmental Studies, Beer Sheva, 2025 - Poster -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. <span style="font-style: italic;">Quantifying the impact of the transition to LED lighting on night sky brightness and color using a TESS 4C photometer.</span> LPTMM, Altmunster, 2024 - Talk -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Brickner, N., Silver, M., Karnieli, A., Agam, N. <span style="font-style: italic;">Effect of land use changes on the net surface radiation in the Arava valley.</span> DDD, Sde Boker, 2022 - Poster -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Pinel, S., Sadaoui, M., Ludwig, W., Lacquement, G. <span style="font-style: italic;">Impact of climate change on superficial water resources in the South of France: statistical modelling over historical and future scenario periods.</span> EGU, Vienna, 2021 - PICO presentation -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Pinel, S., Sadaoui, M., Lacquement, G. <span style="font-style: italic;">Declining water resources in western Mediterranean associated with climatic changes.</span> World's Large River Conference, Moscow, 2021  - Poster -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Sadaoui, M., Pinel, S., Ludwig, W., Lacquement, G. <span style="font-style: italic;">Identification of climatic and anthropogenic drivers for reduced water flow in coastal Mediterranean rivers of southern France.</span> EGU, Vienna, 2020 - Poster -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Lacquement, G., Kypreos, V., Sadaoui, M. <span style="font-style: italic;">Impact of climate change in Mediterranean river basin water resources: characterization of the climate forcing and agricultural practices evolution.</span> PhD Conference, Perpignan, 2019 - Talk -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Lacquement, G., Sadaoui, M. <span style="font-style: italic;">Declining water resources in coastal Mediterranean river basins in southern France: climatic forcing and mitigation strategies for agricultural land use.</span> EGU, Vienna, 2019 - Talk -</li>
+      <li><span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Sadaoui, M., Lacquement, G. <span style="font-style: italic;">Effects of climate change on the hydroclimatic conditions in coastal Mediterranean river basins in southern France.</span> Time-series Analysis in Environmental Science and Applications to Climate Change, Tromsø, 2019 - Poster -</li>
+      <li>Dessandier, P.A., <span style="font-weight: bold;">Labrousse, C.</span>, Renoult, M., Knies, J., Lepland, A., Hong, W., Bohrmann, G., Panieri, G. <span style="font-style: italic;">Paleo-emissions of methane on the Vestnesa Ridge (West-Svalbard) over the Quaternary revealed by benthic foraminiferal distribution and stable isotopes.</span> Gas in Marine Sediments (GIMS14), Haifa, Israel, 2018 - Poster -</li>
+    </ul>
+
+    <!-- New Awards & Distinctions section -->
+    <h3 class="break-before-page">Awards & Distinctions</h3>
+    <ul class="awards-list">
+      <li class="award-item"><span class="award-year">2025</span>Poster Prize — Best poster presentation and content, 1st place — ALAN Conference, Westport<span class="award-badge">Winner</span></li>
+      <li class="award-item"><span class="award-year">2021</span>Traineeship position ‐ competitive selection — Joint Research Centre of the European Commission, Ispra Italy</li>
+      <li class="award-item"><span class="award-year">2020</span>Honors Award ‐ to encourage women in scientific career abroad — Association des Femmes Diplomées des Universités (AFFDU)</li>
+      <li class="award-item"><span class="award-year">2020</span>Distinction ‐ Editor’s choice article — Unravelling Climate and Anthropogenic Forcings on the Evolution of Surface Water Resources in Southern France (DOI:10.3390/w12123581)</li>
+      <li class="award-item"><span class="award-year">2018‐2021</span>Travel grants — Doctoral School Energy and Environment ED305</li>
+      <li class="award-item"><span class="award-year">2018</span>PhD fundings ‐ competitive selection — Doctoral School Energy and Environment ED305</li>
+      <li class="award-item"><span class="award-year">2016</span>Erasmus+ Scholarship — European Commission</li>
+    </ul>
+
   </div>
-
-  <!-- Non peer-reviewed publications and non-scientific events -->
-  <div style="margin-bottom: 2rem;">
-    <h3 style="color: #4db6ac; border-bottom: 2px solid #4db6ac; padding-bottom: 0.5rem;">Non peer-reviewed publications and non-scientific events</h3>
-    <ul style="list-style-type: none; padding-left: 0; font-size: small;">
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        Cafe des Sciences, French Institute of Tel Aviv (Presentation, open to public, 2022) <span style="font-style: italic;">Land use changes in the Arava valley: What consequences for the local climate?</span> - Talk -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        Radio Kan Israel (2022) <span style="font-style: italic;">A short intervention on the heatwaves in Europe</span> - Talk -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        Natura Catalana (monthly journal for the Catalan Natural Reserves - in french), November 2020 n°40, p.8. <span style="font-weight: bold;">Camille Labrousse</span>. <span style="font-style: italic;">L\'Agly, le Tech et la Têt. Evolution des fleuves cotiers des Pyrenees-Orientales</span> - Article writing -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        1er Cahier Régional Occitanie sur les Changements Climatiques (CROCC_2021) (1st Regional Summary of Occitanie on Climatic Changes - in french), Chapter \'Water\'. <span style="font-weight: bold;">Labrousse Camille</span>, Ludwig Wolfgang. <span style="font-style: italic;">Réduction des ressources en eau superfi- cielles en Occitanie-Est sur la période 1959-2018 associée aux changements climatiques et perspectives pour le 21ème siècle</span> - Chapter writing and review -
-      </li>
-    </ul>
-  </div>
-
-  <!-- Conferences -->
-  <div>
-    <h3 style="color: #4db6ac; border-bottom: 2px solid #4db6ac; padding-bottom: 0.5rem;">Conferences</h3>
-    
-    <h4 style="color: #333; margin-top: 1.5rem; margin-bottom: 0.5rem;">Coming Soon</h4>
-    <ul style="list-style-type: none; padding-left: 0; font-size: small;">
-     <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Haspel, C., Levin, N.  <span style="font-style: italic;">Spectral and Brightness Changes in Nighttime Lighting: From HPS to LED in the Negev Desert.</span> DDD, Sde Boqer, 2025 - Poster -
-      </li> 
-    </ul>
-
-    <h4 style="color: #333; margin-top: 1.5rem; margin-bottom: 0.5rem;">Past Conferences</h4>
-    <ul style="list-style-type: none; padding-left: 0; font-size: small;">
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Haspel, C., Levin, N.  <span style="font-style: italic;">A global assessment of nighttime emissions from major roads outside of urban areas.</span> ALAN, Westport, 2025 - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Haspel, C., Levin, N.  <span style="font-style: italic;">Measuring the night: Ground-based and satellite imagery analysis on the shift from HPS to LED street-lighting and its effects on sky brightness and color.</span> IGARSS, Brisbane, 2025 - Talk -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. <span style="font-style: italic;">Lighting the way: Monitoring the impact of streelight retrofits on Artificial Night Light in Sha\'ar HaGai, Israel.</span> Climate Change,Sustainability and Environmental Studies, Beer Sheva, 2025 - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Levin, N., Haspel, C. <span style="font-style: italic;">Quantifying the impact of the transition to LED lighting on night sky brightness and color using a TESS 4C photometer.</span> LPTMM, Altmunster, 2024 - Talk -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Brickner, N., Silver, M., Karnieli, A., Agam, N. <span style="font-style: italic;">Effect of land use changes on the net surface radiation in the Arava valley.</span> DDD, Sde Boker, 2022 - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Pinel, S., Sadaoui, M., Ludwig, W., Lacquement, G. <span style="font-style: italic;">Impact of climate change on superficial water resources in the South of France: statistical modelling over historical and future scenario periods.</span> EGU, Vienna, 2021 - PICO presentation -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Pinel, S., Sadaoui, M., Lacquement, G. <span style="font-style: italic;">Declining water resources in western Mediterranean associated with climatic changes.</span> World\'s Large River Conference, Moscow, 2021  - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Sadaoui, M., Pinel, S., Ludwig, W., Lacquement, G. <span style="font-style: italic;">Identification of climatic and anthropogenic drivers for reduced water flow in coastal Mediterranean rivers of southern France.</span> EGU, Vienna, 2020 - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Lacquement, G., Kypreos, V., Sadaoui, M. <span style="font-style: italic;">Impact of climate change in Mediterranean river basin water resources: characterization of the climate forcing and agricultural practices evolution.</span> PhD Conference, Perpignan, 2019 - Talk -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Lacquement, G., Sadaoui, M. <span style="font-style: italic;">Declining water resources in coastal Mediterranean river basins in southern France: climatic forcing and mitigation strategies for agricultural land use.</span> EGU, Vienna, 2019 - Talk -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Sadaoui, M., Lacquement, G. <span style="font-style: italic;">Effects of climate change on the hydroclimatic conditions in coastal Mediterranean river basins in southern France.</span> Time-series Analysis in Environmental Science and Applications to Climate Change, Tromsø, 2019 - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        Dessandier, P.A., <span style="font-weight: bold;">Labrousse, C.</span>, Renoult, M., Knies, J., Lepland, A., Hong, W., Bohrmann, G., Panieri, G. <span style="font-style: italic;">Paleo-emissions of methane on the Vestnesa Ridge (West-Svalbard) over the Quaternary revealed by benthic foraminiferal distribution and stable isotopes.</span> Gas in Marine Sediments (GIMS14), Haifa, Israel, 2018 - Poster -
-      </li>
-      <li style="margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #4db6ac;">
-        <span style="font-weight: bold;">Labrousse, C.</span>, Ludwig, W., Lacquement, G. <span style="font-style: italic;">Climate change and Rurality: water resources in the Tet river basin.</span> Day of Scientific Meeting in Narbonne, 2018 - Talk -
-      </li>
-    </ul>
-  </div>
-</section>
+</body>
+</html>
