@@ -2,17 +2,17 @@
 <html>
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shikoku Cycling Route - Distance Tracker</title>
-
-    <style>html, body {width: 100%; height: 100%; margin: 0; padding: 0;}</style>
-    <style>#map {position: absolute; top: 0; bottom: 0; right: 0; left: 0;}</style>
-
+    <title>Japan Cycling Route - Distance Tracker</title>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
+        /* Modern UI Control Box */
         #ui-control {
             position: absolute;
             top: 15px;
@@ -24,7 +24,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             border: 1px solid #ccc;
-            width: 260px;
+            width: 250px;
         }
         .distance-display {
             font-size: 28px;
@@ -50,18 +50,14 @@
         }
         button:hover { background-color: #1565c0; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #status-msg {
-            font-size: 12px;
-            color: #555;
-            text-align: center;
-            font-style: italic;
-        }
+        #status-msg { font-size: 12px; color: #555; text-align: center; font-style: italic; }
     </style>
 </head>
 <body>
+    
     <div id="ui-control">
         <div id="status-msg">Loading route data...</div>
-
+        
         <div class="distance-display">
             <span id="dist-text">0.00</span> km
         </div>
@@ -69,28 +65,30 @@
         <div class="controls">
             <label for="speedSlider"><b>Animation Speed:</b></label>
             <input type="range" id="speedSlider" min="1" max="100" value="20">
-
+            
             <button id="playBtn" disabled>Start / Restart</button>
         </div>
     </div>
-
+    
     <div id="map"></div>
-
+    
     <script>
+        // 1. Initialize Map
         var map = L.map("map", {
-            center: [33.5, 133.0],
-            zoom: 8
+            center: [34.0, 135.0], 
+            zoom: 6
         });
 
+        // 2. Add Satellite Map Layer
         L.tileLayer(
             "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             { attribution: "Esri Satellite", maxZoom: 18 }
         ).addTo(map);
 
-        var allPoints = [];
-        var animatedLine;
-        var animationFrameId;
-        var currentIndex = 0;
+        var allPoints = [];     
+        var animatedLine;       
+        var animationFrameId;   
+        var currentIndex = 0;   
         var MAX_POINTS_FOR_ANIMATION = 12000;
 
         function downsamplePoints(points, maxPoints) {
@@ -113,18 +111,80 @@
             return sampled;
         }
 
-        function finalizeRouteLoad(points) {
-            if (!points.length) {
+        function processGpxData(gpxData) {
+            var xmlDoc;
+            try {
+                xmlDoc = $.parseXML(gpxData);
+            } catch (err) {
+                document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Invalid GPX/XML format.</span>";
+                console.error(err);
+                return;
+            }
+
+            allPoints = [];
+            var totalDist = 0;
+            var prevLatLng = null;
+            var latLngsForBounds = [];
+
+            $(xmlDoc).find("rtept, trkpt").each(function() {
+                var lat = parseFloat($(this).attr("lat"));
+                var lon = parseFloat($(this).attr("lon"));
+                var currentLatLng = L.latLng(lat, lon);
+
+                if (prevLatLng) {
+                    totalDist += prevLatLng.distanceTo(currentLatLng);
+                }
+
+                allPoints.push({
+                    latlng: currentLatLng,
+                    distance: totalDist / 1000
+                });
+
+                latLngsForBounds.push(currentLatLng);
+                prevLatLng = currentLatLng;
+            });
+
+            if (allPoints.length === 0) {
                 document.getElementById('status-msg').innerText = "No route points found.";
                 return;
             }
 
-            var originalPointCount = points.length;
-            allPoints = downsamplePoints(points, MAX_POINTS_FOR_ANIMATION);
+            var originalPointCount = allPoints.length;
+            allPoints = downsamplePoints(allPoints, MAX_POINTS_FOR_ANIMATION);
 
-            if (animatedLine) {
-                map.removeLayer(animatedLine);
+            if (animatedLine) map.removeLayer(animatedLine);
+            animatedLine = L.polyline([], {color: '#ff3300', weight: 4, opacity: 0.8}).addTo(map);
+
+            map.fitBounds(L.polyline(latLngsForBounds).getBounds());
+
+            document.getElementById('dist-text').innerText = "0.00";
+            document.getElementById('playBtn').disabled = false;
+            if (originalPointCount !== allPoints.length) {
+                document.getElementById('status-msg').innerText = "Route ready: " + originalPointCount + " points optimized to " + allPoints.length + ".";
+            } else {
+                document.getElementById('status-msg').innerText = "Route ready!";
             }
+
+            startAnimation();
+        }
+
+        function processEmbeddedRouteData(routeData) {
+            if (!Array.isArray(routeData) || routeData.length === 0) {
+                document.getElementById('status-msg').innerText = "No route points found.";
+                return;
+            }
+
+            allPoints = routeData.map(function(p) {
+                return {
+                    latlng: L.latLng(p.lat, p.lon),
+                    distance: p.distance
+                };
+            });
+
+            var originalPointCount = allPoints.length;
+            allPoints = downsamplePoints(allPoints, MAX_POINTS_FOR_ANIMATION);
+
+            if (animatedLine) map.removeLayer(animatedLine);
             animatedLine = L.polyline([], {color: '#ff3300', weight: 4, opacity: 0.8}).addTo(map);
 
             map.fitBounds(L.polyline(allPoints.map(function(p) { return p.latlng; })).getBounds());
@@ -138,92 +198,41 @@
             }
         }
 
-        function processGpxData(gpxData) {
-            var xmlDoc;
-            try {
-                xmlDoc = $.parseXML(gpxData);
-            } catch (err) {
-                console.error(err);
-                document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Invalid GPX/XML format.</span>";
-                return;
-            }
-
-            var points = [];
-            var totalDist = 0;
-            var prevLatLng = null;
-
-            $(xmlDoc).find("rtept, trkpt").each(function() {
-                var lat = parseFloat($(this).attr("lat"));
-                var lon = parseFloat($(this).attr("lon"));
-                var currentLatLng = L.latLng(lat, lon);
-
-                if (prevLatLng) {
-                    totalDist += prevLatLng.distanceTo(currentLatLng);
-                }
-
-                points.push({
-                    latlng: currentLatLng,
-                    distance: totalDist / 1000
-                });
-
-                prevLatLng = currentLatLng;
-            });
-
-            finalizeRouteLoad(points);
-        }
-
-        function processEmbeddedRouteData(routeData) {
-            if (!Array.isArray(routeData) || routeData.length === 0) {
-                document.getElementById('status-msg').innerText = "No route points found.";
-                return;
-            }
-
-            var points = routeData.map(function(p) {
-                return {
-                    latlng: L.latLng(p.lat, p.lon),
-                    distance: p.distance
-                };
-            });
-
-            finalizeRouteLoad(points);
-        }
-
-        var gpxFileName = "shikoku_track.gpx";
+        // 3. Load GPX: auto-fetch on HTTP(S), pre-generated route data on file://
+        var gpxFileName = "Nagasaki_Tokyo.gpx";
 
         if (window.location.protocol === 'file:') {
             var localDataScript = document.createElement('script');
-            localDataScript.src = 'shikoku_route_data.js';
+            localDataScript.src = 'nagasaki_tokyo_route_data.js';
             localDataScript.onload = function() {
-                if (window.SHIKOKU_ROUTE && window.SHIKOKU_ROUTE.length) {
-                    processEmbeddedRouteData(window.SHIKOKU_ROUTE);
+                if (window.NAGASAKI_TOKYO_ROUTE && window.NAGASAKI_TOKYO_ROUTE.length) {
+                    processEmbeddedRouteData(window.NAGASAKI_TOKYO_ROUTE);
                 } else {
                     document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Local route data is empty.</span>";
                 }
             };
             localDataScript.onerror = function() {
-                document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Local route data missing. Keep shikoku_route_data.js next to this HTML file.</span>";
+                document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Local route data missing. Keep nagasaki_tokyo_route_data.js next to this HTML file.</span>";
             };
             document.head.appendChild(localDataScript);
         } else {
             fetch(gpxFileName)
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error("Could not find the GPX file.");
-                    }
+                .then(response => {
+                    if (!response.ok) throw new Error("Could not find the GPX file.");
                     return response.text();
                 })
                 .then(processGpxData)
-                .catch(function(error) {
+                .catch(error => {
                     console.error(error);
                     document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Error loading GPX from server.</span>";
                 });
         }
 
+        // 4. Animation Logic
         function startAnimation() {
-            cancelAnimationFrame(animationFrameId);
+            cancelAnimationFrame(animationFrameId); 
             currentIndex = 0;
-
-            if (!allPoints.length || !animatedLine) {
+            if (!allPoints.length) {
                 return;
             }
 
@@ -231,7 +240,7 @@
             document.getElementById('dist-text').innerText = allPoints[0].distance.toFixed(2);
 
             function drawFrame() {
-                var speed = parseInt(document.getElementById('speedSlider').value, 10);
+                var speed = parseInt(document.getElementById('speedSlider').value);
 
                 var targetIndex = currentIndex + speed;
                 if (targetIndex >= allPoints.length) {
@@ -243,14 +252,14 @@
                     animatedLine.addLatLng(allPoints[currentIndex].latlng);
                 }
 
-                document.getElementById('dist-text').innerText = allPoints[currentIndex].distance.toFixed(2);
+                var currentDist = allPoints[currentIndex].distance;
+                document.getElementById('dist-text').innerText = currentDist.toFixed(2);
 
                 if (currentIndex < allPoints.length - 1) {
                     animationFrameId = requestAnimationFrame(drawFrame);
                 }
             }
-
-            drawFrame();
+            drawFrame(); 
         }
 
         document.getElementById('playBtn').addEventListener('click', startAnimation);
