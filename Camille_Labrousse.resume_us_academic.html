@@ -200,6 +200,16 @@
       background: #fff;
     }
 
+    .journey object {
+      width: 100%;
+      max-width: 820px;
+      height: 420px;
+      border: 1px solid #d3dbe6;
+      box-shadow: 0 6px 18px rgba(23, 43, 71, 0.1);
+      border-radius: 6px;
+      background: #fff;
+    }
+
     .journey p {
       margin: 8px 0 0;
       color: var(--muted);
@@ -231,6 +241,10 @@
 
       .section {
         padding: 0;
+      }
+
+      .journey object {
+        height: 250px;
       }
     }
 
@@ -280,8 +294,10 @@
     <section class="section">
       <h2>Academic Journey Map</h2>
       <div class="journey">
-        <a href="assets/my_academic_journey.svg" target="_blank" title="Click to view larger map">
-          <img src="assets/my_academic_journey.svg" alt="Map of Camille Labrousse's academic journey">
+        <a href="https://camille28066.github.io/assets/my_academic_journey.svg" target="_blank" title="Click to view larger map">
+          <object type="image/svg+xml" data="https://camille28066.github.io/assets/my_academic_journey.svg" aria-label="Map of Camille Labrousse's academic journey">
+            <img src="https://camille28066.github.io/assets/my_academic_journey.svg" alt="Map of Camille Labrousse's academic journey">
+          </object>
         </a>
         <p>A visual representation of key academic and research locations. Click map to enlarge.</p>
       </div>
