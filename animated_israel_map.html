@@ -3,6 +3,230 @@
 <head>
     
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <title>Israel Trail Route - Distance Tracker</title>
+
+        <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+        <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+        <style>
+            #ui-control {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                z-index: 1000;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 12px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                border: 1px solid #ccc;
+                width: 185px;
+            }
+            .distance-display {
+                font-size: 22px;
+                font-weight: bold;
+                color: #d32f2f;
+                margin: 6px 0;
+                text-align: center;
+            }
+            .controls {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            button {
+                background-color: #1976d2;
+                color: white;
+                border: none;
+                padding: 8px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            #speedSlider { width: 100%; }
+            button:hover { background-color: #1565c0; }
+            button:disabled { background-color: #ccc; cursor: not-allowed; }
+            #status-msg { font-size: 12px; color: #555; text-align: center; font-style: italic; }
+        </style>
+
+        <script>
+            var map = L.map("map", {
+                center: [30.9, 35.1],
+                zoom: 8
+            });
+
+            L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                { attribution: "Esri Satellite", maxZoom: 18 }
+            ).addTo(map);
+
+            var allPoints = [];
+            var animatedLine;
+            var animationFrameId;
+            var currentIndex = 0;
+            var MAX_POINTS_FOR_ANIMATION = 12000;
+            var ZOOM_OUT_LEVELS = 1;
+
+            function fitBoundsWithZoomOut(bounds) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+                var currentZoom = map.getZoom();
+                var minZoom = map.getMinZoom();
+                map.setZoom(Math.max(minZoom, currentZoom - ZOOM_OUT_LEVELS));
+            }
+
+            function downsamplePoints(points, maxPoints) {
+                if (points.length <= maxPoints) {
+                    return points;
+                }
+
+                var step = Math.ceil(points.length / maxPoints);
+                var sampled = [];
+
+                for (var i = 0; i < points.length; i += step) {
+                    sampled.push(points[i]);
+                }
+
+                var last = points[points.length - 1];
+                if (sampled[sampled.length - 1] !== last) {
+                    sampled.push(last);
+                }
+
+                return sampled;
+            }
+
+            function processGpxData(gpxData) {
+                var xmlDoc;
+                try {
+                    xmlDoc = $.parseXML(gpxData);
+                } catch (err) {
+                    document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Invalid GPX/XML format.</span>";
+                    console.error(err);
+                    return;
+                }
+
+                allPoints = [];
+                var totalDist = 0;
+                var prevLatLng = null;
+                var latLngsForBounds = [];
+
+                $(xmlDoc).find("rtept, trkpt").each(function() {
+                    var lat = parseFloat($(this).attr("lat"));
+                    var lon = parseFloat($(this).attr("lon"));
+                    var currentLatLng = L.latLng(lat, lon);
+
+                    if (prevLatLng) {
+                        totalDist += prevLatLng.distanceTo(currentLatLng);
+                    }
+
+                    allPoints.push({
+                        latlng: currentLatLng,
+                        distance: totalDist / 1000
+                    });
+
+                    latLngsForBounds.push(currentLatLng);
+                    prevLatLng = currentLatLng;
+                });
+
+                if (allPoints.length === 0) {
+                    document.getElementById('status-msg').innerText = "No route points found.";
+                    return;
+                }
+
+                var originalPointCount = allPoints.length;
+                allPoints = downsamplePoints(allPoints, MAX_POINTS_FOR_ANIMATION);
+
+                if (animatedLine) map.removeLayer(animatedLine);
+                animatedLine = L.polyline([], {color: '#ff3300', weight: 4, opacity: 0.8}).addTo(map);
+
+                fitBoundsWithZoomOut(L.polyline(latLngsForBounds).getBounds());
+
+                document.getElementById('dist-text').innerText = "0.00";
+                document.getElementById('playBtn').disabled = false;
+                if (originalPointCount !== allPoints.length) {
+                    document.getElementById('status-msg').innerText = "Route ready: " + originalPointCount + " points optimized to " + allPoints.length + ". Click Start.";
+                } else {
+                    document.getElementById('status-msg').innerText = "Route ready! Click Start.";
+                }
+            }
+
+            var gpxFileName = "shvil_israel.gpx";
+
+            if (window.location.protocol === 'file:') {
+                document.getElementById('status-msg').innerHTML = "<span style='color:red;'>For local preview, run a local web server so the GPX can be loaded (for example: python -m http.server).</span>";
+            } else {
+                fetch(gpxFileName)
+                    .then(function(response) {
+                        if (!response.ok) throw new Error("Could not find the GPX file.");
+                        return response.text();
+                    })
+                    .then(processGpxData)
+                    .catch(function(error) {
+                        console.error(error);
+                        document.getElementById('status-msg').innerHTML = "<span style='color:red;'>Error loading GPX from server. Ensure shvil_israel.gpx is in the same folder.</span>";
+                    });
+            }
+
+            function startAnimation() {
+                cancelAnimationFrame(animationFrameId);
+                currentIndex = 0;
+                if (!allPoints.length) {
+                    return;
+                }
+
+                animatedLine.setLatLngs([allPoints[0].latlng]);
+                document.getElementById('dist-text').innerText = allPoints[0].distance.toFixed(2);
+
+                function drawFrame() {
+                    var speed = parseInt(document.getElementById('speedSlider').value, 10);
+
+                    var targetIndex = currentIndex + speed;
+                    if (targetIndex >= allPoints.length) {
+                        targetIndex = allPoints.length - 1;
+                    }
+
+                    while (currentIndex < targetIndex) {
+                        currentIndex += 1;
+                        animatedLine.addLatLng(allPoints[currentIndex].latlng);
+                    }
+
+                    var currentDist = allPoints[currentIndex].distance;
+                    document.getElementById('dist-text').innerText = currentDist.toFixed(2);
+
+                    if (currentIndex < allPoints.length - 1) {
+                        animationFrameId = requestAnimationFrame(drawFrame);
+                    }
+                }
+
+                drawFrame();
+            }
+
+            document.getElementById('playBtn').addEventListener('click', startAnimation);
+        </script>
+
+        <div id="ui-control">
+            <div id="status-msg">Loading route data...</div>
+
+            <div class="distance-display">
+                <span id="dist-text">0.00</span> km
+            </div>
+
+            <div class="controls">
+                <label for="speedSlider"><b>Animation Speed:</b></label>
+                <input type="range" id="speedSlider" min="1" max="100" value="20">
+
+                <button id="playBtn" disabled>Start / Restart</button>
+            </div>
+        </div>
+
+        <div id="map"></div>
+
+    </body>
+    </html>
     
         <script>
             L_NO_TOUCH = false;
