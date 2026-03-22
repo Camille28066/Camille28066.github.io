@@ -19,35 +19,36 @@
             right: 15px;
             z-index: 1000;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             border: 1px solid #ccc;
-            width: 250px;
+            width: 185px;
         }
         .distance-display {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: bold;
             color: #d32f2f;
-            margin: 10px 0;
+            margin: 6px 0;
             text-align: center;
         }
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         button {
             background-color: #1976d2;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 8px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
         }
+        #speedSlider { width: 100%; }
         button:hover { background-color: #1565c0; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         #status-msg { font-size: 12px; color: #555; text-align: center; font-style: italic; }
@@ -90,6 +91,14 @@
         var animationFrameId;   
         var currentIndex = 0;   
         var MAX_POINTS_FOR_ANIMATION = 12000;
+        var ZOOM_OUT_LEVELS = 1;
+
+        function fitBoundsWithZoomOut(bounds) {
+            map.fitBounds(bounds, { padding: [20, 20] });
+            var currentZoom = map.getZoom();
+            var minZoom = map.getMinZoom();
+            map.setZoom(Math.max(minZoom, currentZoom - ZOOM_OUT_LEVELS));
+        }
 
         function downsamplePoints(points, maxPoints) {
             if (points.length <= maxPoints) {
@@ -155,17 +164,15 @@
             if (animatedLine) map.removeLayer(animatedLine);
             animatedLine = L.polyline([], {color: '#ff3300', weight: 4, opacity: 0.8}).addTo(map);
 
-            map.fitBounds(L.polyline(latLngsForBounds).getBounds());
+            fitBoundsWithZoomOut(L.polyline(latLngsForBounds).getBounds());
 
             document.getElementById('dist-text').innerText = "0.00";
             document.getElementById('playBtn').disabled = false;
             if (originalPointCount !== allPoints.length) {
-                document.getElementById('status-msg').innerText = "Route ready: " + originalPointCount + " points optimized to " + allPoints.length + ".";
+                document.getElementById('status-msg').innerText = "Route ready: " + originalPointCount + " points optimized to " + allPoints.length + ". Click Start.";
             } else {
-                document.getElementById('status-msg').innerText = "Route ready!";
+                document.getElementById('status-msg').innerText = "Route ready! Click Start.";
             }
-
-            startAnimation();
         }
 
         function processEmbeddedRouteData(routeData) {
@@ -187,7 +194,7 @@
             if (animatedLine) map.removeLayer(animatedLine);
             animatedLine = L.polyline([], {color: '#ff3300', weight: 4, opacity: 0.8}).addTo(map);
 
-            map.fitBounds(L.polyline(allPoints.map(function(p) { return p.latlng; })).getBounds());
+            fitBoundsWithZoomOut(L.polyline(allPoints.map(function(p) { return p.latlng; })).getBounds());
 
             document.getElementById('dist-text').innerText = "0.00";
             document.getElementById('playBtn').disabled = false;
